@@ -1,0 +1,28 @@
+model User {
+    id        String   @id @default(uuid())
+    name      String
+    email     String   @unique
+    password  String?
+    role      Role     @default(USER)
+    createdat DateTime @default(now())
+    updatedat DateTime @updatedAt
+
+    vendor      Vendor?
+    manager     Manager?
+    deliveryBoy DeliveryBoy?
+    Orders      Order[]
+    CartItems   Cart[]
+    Wishlist    Wishlist[]
+    Reviews     Review[]
+    Questions   Question[]
+    Chats       ChatMessage[]
+}
+
+enum Role {
+    USER
+    VENDOR
+    MANAGER
+    ADMIN
+    SUPER_ADMIN
+    DELIVERY_BOY
+}

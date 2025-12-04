@@ -1,0 +1,10 @@
+
+model ChatMessage {
+    id         String   @id @default(uuid())
+    senderid   String
+    receiverid String
+    message    String
+    createdat  DateTime @default(now())
+
+    user User @relation(fields: [senderid], references: [id])
+}

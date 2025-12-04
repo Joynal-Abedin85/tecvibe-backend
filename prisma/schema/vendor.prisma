@@ -1,0 +1,21 @@
+
+
+model Vendor {
+    id       String       @id @default(uuid())
+    userid   String       @unique
+    shopname String
+    status   VendorStatus @default(PENDING)
+    area     String?
+
+    user     User          @relation(fields: [userid], references: [id])
+    Products Product[]
+    Orders   Order[]
+    Wallet   VendorWallet?
+}
+
+enum VendorStatus {
+    PENDING
+    APPROVED
+    REJECTED
+    SUSPENDED
+}

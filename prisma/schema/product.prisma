@@ -1,0 +1,38 @@
+
+
+model Product {
+    id          String        @id @default(uuid())
+    verdorid    String
+    name        String
+    description String?
+    price       Float
+    stock       Int
+    status      ProductStatus @default(PENDING)
+    categoryid  String
+    brandid     String
+
+    verdor   Vendor   @relation(fields: [verdorid], references: [id])
+    category Category @relation(fields: [categoryid], references: [id])
+    brand    Brand    @relation(fields: [brandid], references: [id])
+
+    productimages productimage[]
+    carts         Cart[]
+    wishlists     Wishlist[]
+    orderItems    OrderItem[]
+    reviews       Review[]
+    questions     Question[]
+}
+
+model productimage {
+    id        String @id @default(uuid())
+    productid String
+    url       String
+
+    product Product @relation(fields: [productid], references: [id])
+}
+
+enum ProductStatus {
+    PENDING
+    APPROVED
+    REJECTED
+}

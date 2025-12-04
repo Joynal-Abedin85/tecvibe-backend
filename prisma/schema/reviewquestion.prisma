@@ -1,0 +1,23 @@
+
+
+model Review {
+    id        String  @id @default(uuid())
+    userid    String
+    productid String
+    rating    Int
+    comment   String?
+
+    user    User    @relation(fields: [userid], references: [id])
+    product Product @relation(fields: [productid], references: [id])
+}
+
+model Question {
+    id        String  @id @default(uuid())
+    userid    String
+    productid String
+    question  String
+    answer    String?
+
+    user    User    @relation(fields: [userid], references: [id])
+    product Product @relation(fields: [productid], references: [id])
+}

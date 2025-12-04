@@ -1,0 +1,181 @@
+// src/modules/admin/admin.controller.ts
+import { Request, Response } from "express";
+import { catchAsync } from "../../utils/catchasync";
+import { adminService } from "./admin.service";
+
+/* ----------------------------
+     VENDORS
+  -----------------------------*/
+const getPendingVendors = catchAsync(async (req: Request, res: Response) => {
+  const vendors = await adminService.getPendingVendors();
+  res.json({ success: true, vendors });
+});
+
+const approveVendor = catchAsync(async (req: Request, res: Response) => {
+  const vendor = await adminService.approveVendor(req.params.id);
+  res.json({ success: true, vendor });
+});
+
+const rejectVendor = catchAsync(async (req: Request, res: Response) => {
+  const vendor = await adminService.rejectVendor(req.params.id);
+  res.json({ success: true, vendor });
+});
+
+const suspendVendor = catchAsync(async (req: Request, res: Response) => {
+  const vendor = await adminService.suspendVendor(req.params.id);
+  res.json({ success: true, vendor });
+});
+
+/* ----------------------------
+     CATEGORY
+  -----------------------------*/
+const createCategory = catchAsync(async (req: Request, res: Response) => {
+  const category = await adminService.createCategory(req.body.name);
+  res.json({ success: true, category });
+});
+
+const updateCategory = catchAsync(async (req: Request, res: Response) => {
+  const category = await adminService.updateCategory(
+    req.params.id,
+    req.body.name
+  );
+  res.json({ success: true, category });
+});
+
+const deleteCategory = catchAsync(async (req: Request, res: Response) => {
+  await adminService.deleteCategory(req.params.id);
+  res.json({ success: true, message: "Category deleted" });
+});
+
+/* ----------------------------
+     BRAND
+  -----------------------------*/
+const createBrand = catchAsync(async (req: Request, res: Response) => {
+  const brand = await adminService.createBrand(req.body.name);
+  res.json({ success: true, brand });
+});
+
+const updateBrand = catchAsync(async (req: Request, res: Response) => {
+  const brand = await adminService.updateBrand(req.params.id, req.body.name);
+  res.json({ success: true, brand });
+});
+
+const deleteBrand = catchAsync(async (req: Request, res: Response) => {
+  await adminService.deleteBrand(req.params.id);
+  res.json({ success: true, message: "Brand deleted" });
+});
+
+/* ----------------------------
+     MANAGERS
+  -----------------------------*/
+const getManagers = catchAsync(async (req: Request, res: Response) => {
+  const managers = await adminService.getManagers();
+  res.json({ success: true, managers });
+});
+
+const createManager = catchAsync(async (req: Request, res: Response) => {
+  const manager = await adminService.createManager(
+    req.body.userId,
+    req.body.area
+  );
+  res.json({ success: true, manager });
+});
+
+const updateManager = catchAsync(async (req: Request, res: Response) => {
+  const manager = await adminService.updateManager(
+    req.params.id,
+    req.body.area
+  );
+  res.json({ success: true, manager });
+});
+
+const deleteManager = catchAsync(async (req: Request, res: Response) => {
+  await adminService.deleteManager(req.params.id);
+  res.json({ success: true, message: "Manager deleted" });
+});
+
+/* ----------------------------
+     ORDERS
+  -----------------------------*/
+const getOrders = catchAsync(async (req: Request, res: Response) => {
+  const orders = await adminService.getOrders();
+  res.json({ success: true, orders });
+});
+
+const refundOrder = catchAsync(async (req: Request, res: Response) => {
+  const refund = await adminService.refundOrder(req.params.id);
+  res.json({ success: true, refund });
+});
+
+const returnOrder = catchAsync(async (req: Request, res: Response) => {
+  const returned = await adminService.returnOrder(req.params.id);
+  res.json({ success: true, returned });
+});
+
+/* ----------------------------
+     COUPONS
+  -----------------------------*/
+// const createCoupon = catchAsync(async (req: Request, res: Response) => {
+//   const coupon = await adminService.createCoupon(req.body);
+//   res.json({ success: true, coupon });
+// });
+
+// const updateCoupon = catchAsync(async (req: Request, res: Response) => {
+//   const coupon = await adminService.updateCoupon(req.params.id, req.body);
+//   res.json({ success: true, coupon });
+// });
+
+// const deleteCoupon = catchAsync(async (req: Request, res: Response) => {
+//   await adminService.deleteCoupon(req.params.id);
+//   res.json({ success: true, message: "Coupon deleted" });
+// });
+
+/* ----------------------------
+     DELIVERY
+  -----------------------------*/
+const assignDelivery = catchAsync(async (req: Request, res: Response) => {
+  const result = await adminService.assignDelivery(
+    req.body.orderId,
+    req.body.deliveryId
+  );
+  res.json({ success: true, result });
+});
+
+/* ----------------------------
+     REPORTS
+  -----------------------------*/
+const getReports = catchAsync(async (req: Request, res: Response) => {
+  const report = await adminService.getReports();
+  res.json({ success: true, report });
+});
+
+const getAllVendors = catchAsync(async (req: Request, res: Response) => {
+  const vendors = await adminService.getAllVendors();
+  res.json({ success: true, vendors });
+});
+
+export const adminController = {
+  getPendingVendors,
+  approveVendor,
+  rejectVendor,
+  suspendVendor,
+  createCategory,
+  updateCategory,
+  deleteCategory,
+  createBrand,
+  updateBrand,
+  deleteBrand,
+  getManagers,
+  createManager,
+  updateManager,
+  deleteManager,
+  getOrders,
+  refundOrder,
+  returnOrder,
+//   createCoupon,
+//   updateCoupon,
+//   deleteCoupon,
+  assignDelivery,
+  getReports,
+  getAllVendors,
+};
