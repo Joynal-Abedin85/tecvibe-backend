@@ -26,3 +26,11 @@ enum Role {
     SUPER_ADMIN
     DELIVERY_BOY
 }
+
+
+model SystemConfig {
+  id    String  @id @default(uuid())
+  key   String  @unique
+  value String
+}
+

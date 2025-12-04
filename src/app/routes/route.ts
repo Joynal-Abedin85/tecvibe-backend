@@ -3,6 +3,7 @@ import { userorute } from '../modules/user/user.route'
 import { authroute } from '../modules/auth/auth.routes'
 import { vendorroute } from '../modules/vendor/vendor.route'
 import { managerroute } from '../modules/manager/manager.route'
+import { superadminroute } from '../modules/superadmin/superadmin.route'
 
 const router = express.Router()
 
@@ -23,6 +24,10 @@ const moduleroutes = [
     {
         path: "/manager",
         route: managerroute
+    },
+    {
+        path: '/superadmin',
+        route: superadminroute
     }
 ]
 
