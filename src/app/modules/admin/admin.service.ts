@@ -79,9 +79,16 @@ export const adminService = {
   },
 
   createManager: async (userid: string, area: string) => {
-    return prisma.manager.create({
+
+    await prisma.user.update({
+        where: { id : userid},
+        data: {role: "MANAGER"}
+    })
+    const manager = prisma.manager.create({
       data: { userid, area }
     });
+
+    return manager 
   },
 
   updateManager: async (id: string, area: string) => {

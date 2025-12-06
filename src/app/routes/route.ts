@@ -6,6 +6,7 @@ import { managerroute } from '../modules/manager/manager.route'
 import { superadminroute } from '../modules/superadmin/superadmin.route'
 import { deliveryroute } from '../modules/deliveryboy/deliveryboy.route'
 import { ShopRoutes } from '../modules/shop/shop.route'
+import { adminroute } from '../modules/admin/admin.route'
 
 const router = express.Router()
 
@@ -38,6 +39,10 @@ const moduleroutes = [
     {
         path: '/shop',
         route: ShopRoutes
+    },
+    {
+        path: '/admin',
+        route: adminroute
     }
 ]
 
