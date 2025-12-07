@@ -6,16 +6,16 @@ import globalerrorhandler from "./app/middleware/globalerror";
 const app: Application = express()
 
 app.use(cors({
-    origin: "",
+    origin: "http://localhost:3000",
     credentials: true
 }))
 
-app.use(express.json())
+app.use(express.json()) 
 
 app.use("/api/v1", router)
 
 app.get("/", (req: Request , res: Response) => {
-    res.send({message: "this is tecvibe"})
+    res.send({message: "this is tecvibe wevsite"})
 })
 
 
