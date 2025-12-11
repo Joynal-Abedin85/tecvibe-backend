@@ -1,16 +1,15 @@
-
-
 model Order {
     id         String      @id @default(uuid())
     userid     String
     vendorid   String
     deliveryid String?
+    area       String
     total      Float
     status     OrderStatus @default(PENDING)
     createdat  DateTime    @default(now())
 
-    user        User        @relation(fields: [userid], references: [id])
-    vendor      Vendor      @relation(fields: [vendorid], references: [id])
+    user        User         @relation(fields: [userid], references: [id])
+    vendor      Vendor       @relation(fields: [vendorid], references: [id])
     deliveryboy DeliveryBoy? @relation(fields: [deliveryid], references: [id])
 
     items   OrderItem[]

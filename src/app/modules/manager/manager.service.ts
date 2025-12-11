@@ -100,11 +100,76 @@ const sendManagerMessage = async(senderid: string, body: any) => {
     return sendmessage
 }
 
+const   getManagerChat = async (managerId: string) => {
+    // Manager এর সব chat messages fetch
+    const messages = await prisma.chatMessage.findMany({
+      where: {
+        OR: [
+          { senderid: managerId },
+          { receiverid: managerId },
+        ],
+      },
+      orderBy: { createdat: "asc" },
+    });
+    return messages;
+  }
+
  const getSupportTickets = async () => {
   return prisma.order.findMany({
     where: { status: "FAILED" },
   });
 };
+
+
+  const getDashboardStats = async (managerId: string) => {
+    // Manager এর area খুঁজে বের করা
+    const manager = await prisma.manager.findUnique({
+      where: { userid: managerId },
+    });
+
+    if (!manager) throw new Error("Manager not found");
+
+    const area = manager.area;
+
+    // Orders in manager's area
+    const orders = await prisma.order.findMany({
+      where: {area: area ?? undefined, },
+    });
+
+    // Vendors in manager's area
+    const vendors = await prisma.vendor.findMany({
+      where: { area },
+    });
+
+    // Stats
+    const totalOrders = orders.length;
+    const totalVendors = vendors.length;
+    const totalRevenue = orders.reduce((acc, order) => acc + order.total, 0);
+
+    return {
+      totalOrders,
+      totalVendors,
+      totalRevenue,
+    };
+  }
+
+    const getProductById= async (productId: string) => {
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+      include: {
+        category: true,
+        brand: true,
+        verdor: true,
+        productimages: true,
+      },
+    });
+
+    if (!product) throw new Error("Product not found");
+
+    return product;
+  }
+
+
 
 export const managerservice = {
     getallvendor,
@@ -116,5 +181,8 @@ export const managerservice = {
     getorderbymanagerarea,
     reportOrderIssue,
     sendManagerMessage,
-    getSupportTickets
+    getSupportTickets,
+    getDashboardStats,
+    getProductById,
+    getManagerChat
 }

@@ -1,5 +1,5 @@
 import express from "express"
-import { usercontroller } from "./user.controller"
+import { createReturnRequest, getRefundStatus, usercontroller } from "./user.controller"
 import { auth } from "../../middleware/auth";
 
 
@@ -33,8 +33,14 @@ router.post("/products/:id/review", auth, usercontroller.addReview);
 router.get("/products/:id/review", usercontroller.getReviews);
 
 // Questions
-// router.post("/products/:id/question", auth, usercontroller.addQuestion);
-// router.get("/products/:id/question", usercontroller.getQuestions);
+router.post("/products/:id/question", auth, usercontroller.addQuestion);
+router.get("/products/:id/question", usercontroller.getQuestions);
+
+// return request
+router.post("/:id/return", auth, createReturnRequest);
+
+// get refund status
+router.get("/:id/refund", auth, getRefundStatus);
 
 
 

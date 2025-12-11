@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { catchAsync } from "../../utils/catchasync";
 import sendResponse from "../../middleware/sendresponse";
-import { vendorservice } from "./vendor.service";
+import { uploadProductImages, vendorservice } from "./vendor.service";
 
 const applyvendor = catchAsync(async (req: Request, res: Response) => {
   const result = await vendorservice.applyvendor(
@@ -69,7 +69,26 @@ const deleteProduct = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// add product image neded
+// add product image 
+
+
+ const uploadImages = catchAsync(async (req: Request, res: Response) => {
+  const productId = req.params.productId;
+
+  if (!req.files || !(req.files instanceof Array)) {
+    throw new Error("No images uploaded");
+  }
+
+  const result = await uploadProductImages(productId, req.files);
+
+  sendResponse(res, {
+    statusCode: 201,
+    success: true,
+    message: "Images uploaded successfully",
+    data: result,
+  });
+});
+
 
 // stock
 const updateStock = catchAsync(async (req: Request, res: Response) => {
@@ -258,5 +277,6 @@ export const vendorController = {
   getRevenue,
   getInventoryStatus,
   getOrderPerformance,
-  getChats
+  getChats,
+  uploadImages
 };

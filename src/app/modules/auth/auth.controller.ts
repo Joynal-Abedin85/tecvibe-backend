@@ -18,6 +18,13 @@ const register = catchAsync(async (req: Request, res: Response) => {
 const login = catchAsync(async (req: Request, res: Response) => {
   const result = await authservice.login(req.body);
 
+    res.cookie("token", result.token, {
+    httpOnly: true,
+    secure: false, // production এ true
+    sameSite: "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  });
+
   sendResponse(res, {
     statusCode: 201,
     success: true,
@@ -31,6 +38,14 @@ const googlelogin = catchAsync(async (req: Request, res: Response) => {
 
   const result = await authservice.googlelogin(token);
 
+    // Cookie set
+  res.cookie("token",result.token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+
   sendResponse(res, {
     statusCode: 201,
     success: true,
@@ -41,7 +56,7 @@ const googlelogin = catchAsync(async (req: Request, res: Response) => {
 
 export const getMe = catchAsync(async (req: any, res: Response) => {
   sendResponse(res, {
-    statusCode: 201,
+    statusCode: 200,
     success: true,
     message: "success  get",
     data: req.user,
@@ -49,9 +64,16 @@ export const getMe = catchAsync(async (req: any, res: Response) => {
 });
 
 export const logoutUser = catchAsync(async (req: Request, res: Response) => {
-  res.status(200).json({
+
+    res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+  });
+  sendResponse(res, {
+    statusCode: 200,
     success: true,
-    message: "Logout successful"
+    message: "Logout successful",
   });
 });
 

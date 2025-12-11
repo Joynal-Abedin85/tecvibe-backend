@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { vendorController } from "./vendor.controller";
 import { auth } from "../../middleware/auth";
+import { upload } from "../../middleware/multer";
 
 const router = Router();
 
@@ -16,7 +17,8 @@ router.put("/products/:id", auth, vendorController.updateProduct);
 router.delete("/products/:id", auth, vendorController.deleteProduct);
 
 // PRODUCT IMAGES
-// router.post("/products/:id/images", auth, vendorController.addProductImages);
+router.post("/products/:id/images", auth,  upload.array("images", 5),   // multiple image support
+  vendorController.uploadImages);
 
 // STOCK UPDATE
 router.put("/products/:id/stock", auth, vendorController.updateStock);

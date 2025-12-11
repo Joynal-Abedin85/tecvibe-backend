@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { catchAsync } from "../../utils/catchasync";
 import { userservice } from "./user.service";
 import sendResponse from "../../middleware/sendresponse";
+import prisma from "../../utils/prisma";
 
 const getprofile = catchAsync(async (req: Request, res: Response) => {
     const userId = (req as any).user?.id;
@@ -223,6 +224,57 @@ const getQuestions = catchAsync(async(req: Request, res: Response)=> {
     data: question
   });
 })
+
+
+export const createReturnRequest = async (req: any, res: Response) => {
+  try {
+    const { id: orderId } = req.params;
+    const { reason } = req.body || { reason: "No reason provided" };
+
+    // Check if order exists and belongs to user
+    const order = await prisma.order.findUnique({ where: { id: orderId } });
+    if (!order) throw new Error("Order not found");
+    if (order.userid !== req.user.id) throw new Error("Unauthorized");
+
+    // Check if return request already exists
+    const existingReturn = await prisma.returnRequest.findUnique({
+      where: { orderId },
+    });
+    if (existingReturn) throw new Error("Return request already exists");
+
+    const returnReq = await prisma.returnRequest.create({
+      data: {
+        orderId,
+        reason,
+      },
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Return request submitted",
+      data: returnReq,
+    });
+  } catch (err: any) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+};
+
+// Refund status
+export const getRefundStatus = async (req: any, res: Response) => {
+  try {
+    const { id: orderId } = req.params;
+
+    const refund = await prisma.refundsRequest.findUnique({
+      where: { orderid: orderId },
+    });
+
+    if (!refund) return res.json({ status: "No refund request found" });
+
+    res.json({ status: refund.status });
+  } catch (err: any) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+};
 
 
 

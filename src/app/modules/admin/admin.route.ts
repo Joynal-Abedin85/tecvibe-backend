@@ -22,6 +22,12 @@ router.put("/brands/:id", auth, roleCheck([Role.ADMIN]), adminController.updateB
 router.delete("/brands/:id", auth, roleCheck([Role.ADMIN]), adminController.deleteBrand);
 
 router.get("/managers", auth, roleCheck([Role.ADMIN]), adminController.getManagers);
+router.get(
+  "/managers/:id",
+  auth,
+  roleCheck([Role.ADMIN]),
+  adminController.getManagerById
+);
 router.post("/managers", auth, roleCheck([Role.ADMIN]), adminController.createManager);
 router.put("/managers/:id", auth, roleCheck([Role.ADMIN]), adminController.updateManager);
 router.delete("/managers/:id", auth, roleCheck([Role.ADMIN]), adminController.deleteManager);

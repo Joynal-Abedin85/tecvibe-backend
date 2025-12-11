@@ -106,6 +106,16 @@ const sendManagerMessage = catchAsync(async(req: Request, res: Response) => {
     })
 })
 
+const   getManagerChat = async (req: Request, res: Response) => {
+    try {
+      const managerId = (req as any).user.id; // auth middleware থেকে
+      const messages = await managerservice.getManagerChat(managerId);
+      res.status(200).json({ success: true, data: messages });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
+
 const getSupportTickets = catchAsync(async (req: Request, res: Response) => {
   const tickets = await managerservice.getSupportTickets();
 
@@ -116,6 +126,26 @@ const getSupportTickets = catchAsync(async (req: Request, res: Response) => {
     data: tickets,
   });
 });
+
+  const getDashboard= async (req: Request, res: Response) => {
+    try {
+      const managerId = (req as any).user.id; // auth middleware থেকে user attach হয়
+      const stats = await managerservice.getDashboardStats(managerId);
+      res.status(200).json({ success: true, data: stats });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
+
+    const getProductById= async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const product = await managerservice.getProductById(id);
+      res.status(200).json({ success: true, data: product });
+    } catch (error: any) {
+      res.status(404).json({ success: false, message: error.message });
+    }
+  }
 
 
 export const managercontroler = {
@@ -128,5 +158,8 @@ export const managercontroler = {
     getOrdersByManagerArea,
     reportOrderIssue,
     sendManagerMessage,
-    getSupportTickets
+    getSupportTickets,
+    getDashboard,
+    getProductById,
+    getManagerChat
 }

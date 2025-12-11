@@ -46,9 +46,12 @@ const login = async(payload: any) => {
 
     const token = jwt.sign(
         {id: user.id, role: user.role},
-        process.env.JWT_SECRET as string,
+        process.env.JWT_SECRET! as string,
         {expiresIn: "2d"}
     )
+
+    console.log("signed token:", token);
+    console.log("decoded:", jwt.verify(token, process.env.JWT_SECRET!));
 
     return {token,user}
 }

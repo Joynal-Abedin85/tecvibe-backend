@@ -73,6 +73,25 @@ const getManagers = catchAsync(async (req: Request, res: Response) => {
   res.json({ success: true, managers });
 });
 
+ const getManagerById = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const manager = await adminService.getManagerById(id);
+
+  if (!manager) {
+    return res.status(404).json({
+      success: false,
+      message: "Manager not found",
+    });
+  }
+
+  res.json({
+    success: true,
+    manager,
+  });
+});
+
+
 const createManager = catchAsync(async (req: Request, res: Response) => {
   const manager = await adminService.createManager(
     req.body.userId,
@@ -178,4 +197,5 @@ export const adminController = {
   assignDelivery,
   getReports,
   getAllVendors,
+  getManagerById
 };

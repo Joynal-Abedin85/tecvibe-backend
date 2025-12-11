@@ -1,6 +1,15 @@
+import cloudinary from "../../utils/cloudinary";
 import prisma from "../../utils/prisma"
 
 const applyvendor = async(userid: string, payload: any) => {
+
+      const exists = await prisma.vendor.findUnique({
+    where: { userid },
+  });
+
+  if (exists) {
+    throw new Error( "You already applied for vendor");
+  }
     const apply = await prisma.vendor.create({
         data: {
             userid,
@@ -57,7 +66,32 @@ const deleteProduct = async(id: string) => {
     return deletep
 }
 
-// add product image neded
+// add product image 
+
+
+
+export const uploadProductImages = async (productId: string, files: Express.Multer.File[]) => {
+  
+  const uploadedImages = [];
+
+  for (const file of files) {
+    const upload = await cloudinary.uploader.upload(file.path, {
+      folder: "products",
+    });
+
+    const saved = await prisma.productimage.create({
+      data: {
+        productid: productId,
+        url: upload.secure_url,
+      },
+    });
+
+    uploadedImages.push(saved);
+  }
+
+  return uploadedImages;
+};
+
 
 // stock 
 const updatestock = async (id: string, stock: number) => {

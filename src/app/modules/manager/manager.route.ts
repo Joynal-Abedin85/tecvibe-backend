@@ -8,7 +8,7 @@ import { roleCheck } from "../../middleware/rolecheck";
 const router = Router();
 
 // Manager Only Routes
-router.get("/vendors", auth ,roleCheck([Role.MANAGER]), managercontroler.getallvendor);
+router.get("/vendors", auth ,roleCheck([Role.MANAGER, Role.ADMIN]), managercontroler.getallvendor);
 router.put("/products/:id/approve", auth,roleCheck([Role.MANAGER]), managercontroler.approveProduct);
 router.put("/products/:id/reject", auth,roleCheck([Role.MANAGER]), managercontroler.rejectProduct);
 
@@ -19,7 +19,23 @@ router.post("/orders/:id/assign-delivery", auth,roleCheck([Role.MANAGER]), manag
 router.get("/orders/area", auth,roleCheck([Role.MANAGER]), managercontroler.getOrdersByManagerArea);
 router.put("/orders/:id/issue", auth,roleCheck([Role.MANAGER]), managercontroler.reportOrderIssue);
 
+
+router.get("/chat", auth, roleCheck([Role.MANAGER]), managercontroler.getManagerChat);
 router.post("/chat", auth,roleCheck([Role.MANAGER]), managercontroler.sendManagerMessage);
 router.get("/support-tickets", auth,roleCheck([Role.MANAGER]), managercontroler.getSupportTickets);
+
+router.get(
+  "/dashboard",
+  auth,
+  roleCheck([Role.MANAGER]),
+  managercontroler.getDashboard
+);
+
+router.get(
+  "/products/:id",
+  auth,
+  roleCheck([Role.MANAGER]),
+  managercontroler.getProductById
+);
 
 export const managerroute = router;

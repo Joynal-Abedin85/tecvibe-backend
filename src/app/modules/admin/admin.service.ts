@@ -78,6 +78,14 @@ export const adminService = {
     });
   },
 
+  getManagerById: async (id: string) => {
+  return prisma.manager.findUnique({
+    where: { id },
+    include: { user: true },
+  });
+},
+
+
   createManager: async (userid: string, area: string) => {
 
     await prisma.user.update({
@@ -156,13 +164,34 @@ export const adminService = {
   /* -----------------------------------
      REPORTS (Demo version)
   ------------------------------------*/
+
   getReports: async () => {
+    const totalUsers = await prisma.user.count();
+    const totalVendors = await prisma.vendor.count();
+    const totalOrders = await prisma.order.count();
+
+    // Optional: Monthly Sales & Revenue Trend (frontend chart use করার জন্য)
+    const monthlySales = await prisma.order.groupBy({
+      by: ['createdat'],
+      _sum: { total: true },
+    });
+
+    const revenueTrend = monthlySales.map((m) => ({
+      month: m.createdat.toISOString().slice(0, 7), // YYYY-MM
+      revenue: m._sum.total ?? 0,
+    }));
+
     return {
-      totalUsers: await prisma.user.count(),
-      totalVendors: await prisma.vendor.count(),
-      totalOrders: await prisma.order.count()
+      totalUsers,
+      totalVendors,
+      totalOrders,
+      monthlySales: revenueTrend, // BarChart
+      revenueTrend: revenueTrend, // LineChart
     };
   },
+
+
+
 
   getAllVendors: async () => {
     return prisma.vendor.findMany({
