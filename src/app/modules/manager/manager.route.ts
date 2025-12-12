@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { Role } from "@prisma/client";
-import { managercontroler } from "./manager.controller";
+import { getPendingProducts, managercontroler } from "./manager.controller";
 import { auth } from "../../middleware/auth";
 import { roleCheck } from "../../middleware/rolecheck";
 
@@ -9,6 +9,9 @@ const router = Router();
 
 // Manager Only Routes
 router.get("/vendors", auth ,roleCheck([Role.MANAGER, Role.ADMIN]), managercontroler.getallvendor);
+
+router.get("/products/pending", auth,roleCheck([Role.MANAGER]), getPendingProducts);
+
 router.put("/products/:id/approve", auth,roleCheck([Role.MANAGER]), managercontroler.approveProduct);
 router.put("/products/:id/reject", auth,roleCheck([Role.MANAGER]), managercontroler.rejectProduct);
 

@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { catchAsync } from "../../utils/catchasync";
 import { managerservice } from "./manager.service";
 import sendResponse from "../../middleware/sendresponse";
+import prisma from "../../utils/prisma";
 
 const getallvendor = catchAsync(async(req: Request, res: Response) => {
     const result = await managerservice.getallvendor()
@@ -13,6 +14,21 @@ const getallvendor = catchAsync(async(req: Request, res: Response) => {
         data: result
     })
 })
+
+export const getPendingProducts = catchAsync(async (req: Request, res: Response) => {
+  const products = await prisma.product.findMany({
+    where: { status: "PENDING" },
+    include: { productimages: true, verdor: true },
+  });
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Pending products fetched successfully",
+    data: products,
+  });
+});
+
 
 const approveProduct = catchAsync(async(req: Request, res: Response) => {
     const result = await managerservice.approveProduct(req.params.id)

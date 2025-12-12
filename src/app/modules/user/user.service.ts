@@ -96,16 +96,19 @@ const trackingorder = async(orderid: string) => {
 
 // cart service 
 
-const addtocart = async(userid: string, data: any ) => {
-    const item = prisma.cart.create({
-        data: {
-            userid,
-            ...data
-        }
-    })
+const addtocart = async (userid: string, data: any) => {
+  const item = await prisma.cart.create({
+    data: {
+      userid,
+      productid: data.productid,
+      quantity: data.quantity,
 
-    return item
-}
+    },
+  });
+
+  return item;
+};
+
 
 const getcart = async (userid: string) => {
     const getcart = await prisma.cart.findMany({
@@ -137,15 +140,15 @@ const deletecartitem = async (id: string) => {
 // add wishlist 
 
 const addwishlist = async (userid: string, data: any)=> {
-    const addlist = await prisma.wishlist.create({
-        data: {
-            userid,
-            ...data
-        }
-    })
+  return prisma.wishlist.create({
+    data: {
+      userid,
+      productid: data.productid,
+    }
+  });
+};
+ 
 
-    return addlist
-}
 
 const getwishlist = async (userid: string) => {
     const getlist = await prisma.wishlist.findMany({

@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import { catchAsync } from "../../utils/catchasync";
 import sendResponse from "../../middleware/sendresponse";
 import { uploadProductImages, vendorservice } from "./vendor.service";
+import prisma from "../../utils/prisma";
+import cloudinary from "../../utils/cloudinary";
 
 const applyvendor = catchAsync(async (req: Request, res: Response) => {
   const result = await vendorservice.applyvendor(
@@ -28,35 +30,173 @@ const getDashboard = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// product
+// controllers/vendor.controller.ts
 
-const createProduct = catchAsync(async (req: Request, res: Response) => {
-  const result = await vendorservice.createproduct(
-    (req as any).user.id,
-    req.body
-  );
+export const createProductController = async (req: any, res: any) => {
+  try {
+    const { name, price, stock, description, categoryid, brandid } = req.body;
+    const userid = req.user.id;
 
-  sendResponse(res, {
-    statusCode: 201,
-    success: true,
-    message: "create product success",
-    data: result,
-  });
-});
+    // 🔹 Find or create vendor
+    let vendor = await prisma.vendor.findUnique({ where: { userid } });
+    if (!vendor) {
+      vendor = await prisma.vendor.create({
+        data: {
+          userid,
+          shopname: "Default Shop",
+          status: "PENDING",
+        },
+      });
+    }
+
+    // Validate category & brand
+    const category = await prisma.category.findUnique({
+      where: { id: categoryid },
+    });
+    if (!category)
+      return res.status(400).json({ message: "Category not found" });
+
+    const brand = await prisma.brand.findUnique({ where: { id: brandid } });
+    if (!brand) return res.status(400).json({ message: "Brand not found" });
+
+    // Create product
+    const product = await prisma.product.create({
+      data: {
+        verdorid: vendor.id,
+        name,
+        price: Number(price),
+        stock: Number(stock),
+        description,
+        categoryid,
+        brandid,
+      },
+    });
+
+    // Upload images
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+        const upload = await cloudinary.uploader.upload(file.path, {
+          folder: "products",
+        });
+        await prisma.productimage.create({
+          data: { productid: product.id, url: upload.secure_url },
+        });
+      }
+    }
+
+    return res.status(201).json(product);
+  } catch (err: any) {
+    console.error("CREATE PRODUCT ERROR:", err);
+    return res
+      .status(500)
+      .json({ message: err.message || "Internal server error" });
+  }
+};
+
+// controllers/vendor.controller.ts
+
+export const getVendorProductsController = async (req: any, res: any) => {
+  try {
+    const userid = req.user.id;
+
+    // 1️⃣ Find vendor
+    const vendor = await prisma.vendor.findUnique({ where: { userid } });
+    if (!vendor) return res.status(400).json({ message: "Vendor not found" });
+
+    // 2️⃣ Fetch products of this vendor
+    const products = await prisma.product.findMany({
+      where: { verdorid: vendor.id },
+      include: {
+        productimages: true, // fetch images
+      },
+      orderBy: { price: "desc" },
+    });
+
+    // 3️⃣ Map image
+    const formattedProducts = products.map((p) => ({
+      id: p.id,
+      name: p.name,
+      price: p.price,
+      image: p.productimages[0]?.url || "/placeholder.png", // first image or placeholder
+      status: p.status,
+    }));
+
+    res.status(200).json(formattedProducts);
+  } catch (err: any) {
+    console.error("GET VENDOR PRODUCTS ERROR:", err);
+    res.status(500).json({ message: err.message || "Internal server error" });
+  }
+};
+
+export const getProductByIdController = async (req: any, res: any) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) return res.status(400).json({ message: "Product ID is required" });
+
+    const product = await prisma.product.findUnique({
+      where: { id },
+      include: {
+        productimages: true,
+        category: true,
+        brand: true,
+      },
+    });
+
+    if (!product) return res.status(404).json({ message: "Product not found" });
+
+    return res.status(200).json(product);
+  } catch (err: any) {
+    console.error("GET PRODUCT BY ID ERROR:", err);
+    return res
+      .status(500)
+      .json({ message: err.message || "Internal server error" });
+  }
+};
 
 const updateProduct = catchAsync(async (req: Request, res: Response) => {
-  const result = await vendorservice.updateproduct(
-    (req as any).params.id,
-    req.body
-  );
+  const productId = req.params.id;
+  
+  // Only update fields if they exist (optional update)
+  const { name, price, stock, description, categoryid, brandid } = req.body;
+
+  const updatedProduct = await prisma.product.update({
+    where: { id: productId },
+    data: {
+      ...(name && { name }),
+      ...(price && { price: Number(price) }),
+      ...(stock && { stock: Number(stock) }),
+      ...(description && { description }),
+      ...(categoryid && { categoryid }),
+      ...(brandid && { brandid }),
+    },
+  });
+
+  // Upload new images
+  if (req.files && (req.files as Express.Multer.File[]).length > 0) {
+    for (const file of req.files as Express.Multer.File[]) {
+      const upload = await cloudinary.uploader.upload(file.path, {
+        folder: "products",
+      });
+
+      await prisma.productimage.create({
+        data: {
+          productid: productId,
+          url: upload.secure_url,
+        },
+      });
+    }
+  }
 
   sendResponse(res, {
-    statusCode: 201,
+    statusCode: 200,
     success: true,
-    message: "update product success",
-    data: result,
+    message: "Product updated successfully",
+    data: updatedProduct,
   });
 });
+
+
 
 const deleteProduct = catchAsync(async (req: Request, res: Response) => {
   const result = await vendorservice.deleteProduct((req as any).params.id);
@@ -68,27 +208,6 @@ const deleteProduct = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
-
-// add product image 
-
-
- const uploadImages = catchAsync(async (req: Request, res: Response) => {
-  const productId = req.params.productId;
-
-  if (!req.files || !(req.files instanceof Array)) {
-    throw new Error("No images uploaded");
-  }
-
-  const result = await uploadProductImages(productId, req.files);
-
-  sendResponse(res, {
-    statusCode: 201,
-    success: true,
-    message: "Images uploaded successfully",
-    data: result,
-  });
-});
-
 
 // stock
 const updateStock = catchAsync(async (req: Request, res: Response) => {
@@ -155,12 +274,10 @@ const updateOrderStatus = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// returns 
+// returns
 
 const getReturns = catchAsync(async (req: Request, res: Response) => {
-  const result = await vendorservice.getReturns(
-    (req as any).user.id
-  );
+  const result = await vendorservice.getReturns((req as any).user.id);
   sendResponse(res, {
     statusCode: 201,
     success: true,
@@ -182,12 +299,10 @@ const updateReturnStatus = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// refunds 
+// refunds
 
 const getrefund = catchAsync(async (req: Request, res: Response) => {
-  const result = await vendorservice.getRefunds(
-    (req as any).user.id
-  );
+  const result = await vendorservice.getRefunds((req as any).user.id);
   sendResponse(res, {
     statusCode: 201,
     success: true,
@@ -196,12 +311,10 @@ const getrefund = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// sates report  
+// sates report
 
 const getSales = catchAsync(async (req: Request, res: Response) => {
-  const result = await vendorservice.getsales(
-    (req as any).user.id
-  );
+  const result = await vendorservice.getsales((req as any).user.id);
   sendResponse(res, {
     statusCode: 201,
     success: true,
@@ -211,9 +324,7 @@ const getSales = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getRevenue = catchAsync(async (req: Request, res: Response) => {
-  const result = await vendorservice.getrevenue(
-    (req as any).user.id
-  );
+  const result = await vendorservice.getrevenue((req as any).user.id);
   sendResponse(res, {
     statusCode: 201,
     success: true,
@@ -223,9 +334,7 @@ const getRevenue = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getInventoryStatus = catchAsync(async (req: Request, res: Response) => {
-  const result = await vendorservice.getinventorystatus(
-    (req as any).user.id
-  );
+  const result = await vendorservice.getinventorystatus((req as any).user.id);
   sendResponse(res, {
     statusCode: 201,
     success: true,
@@ -235,9 +344,7 @@ const getInventoryStatus = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getOrderPerformance = catchAsync(async (req: Request, res: Response) => {
-  const result = await vendorservice.getorderperformance(
-    (req as any).user.id
-  );
+  const result = await vendorservice.getorderperformance((req as any).user.id);
   sendResponse(res, {
     statusCode: 201,
     success: true,
@@ -247,9 +354,7 @@ const getOrderPerformance = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getChats = catchAsync(async (req: Request, res: Response) => {
-  const result = await vendorservice.getchats(
-    (req as any).user.id
-  );
+  const result = await vendorservice.getchats((req as any).user.id);
   sendResponse(res, {
     statusCode: 201,
     success: true,
@@ -258,11 +363,10 @@ const getChats = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-
 export const vendorController = {
   applyvendor,
   getDashboard,
-  createProduct,
+  //   createProduct,
   updateProduct,
   deleteProduct,
   updateStock,
@@ -278,5 +382,5 @@ export const vendorController = {
   getInventoryStatus,
   getOrderPerformance,
   getChats,
-  uploadImages
+  //   uploadImages
 };

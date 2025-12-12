@@ -13,13 +13,13 @@ router.put("/vendors/:id/approve", auth, roleCheck([Role.ADMIN]), adminControlle
 router.put("/vendors/:id/reject", auth, roleCheck([Role.ADMIN]), adminController.rejectVendor);
 router.put("/vendors/:id/suspend", auth, roleCheck([Role.ADMIN]), adminController.suspendVendor);
 
-router.get("/categories", auth, roleCheck([Role.ADMIN]), adminController.getCategories);
+router.get("/categories", auth, roleCheck([Role.ADMIN, Role.VENDOR]), adminController.getCategories);
 router.post("/categories", auth, roleCheck([Role.ADMIN]), adminController.createCategory);
 router.put("/categories/:id", auth, roleCheck([Role.ADMIN]), adminController.updateCategory);
 router.delete("/categories/:id", auth, roleCheck([Role.ADMIN]), adminController.deleteCategory);
 
 
-router.get("/brands", auth, roleCheck([Role.ADMIN]), adminController.getBrands);
+router.get("/brands", auth, roleCheck([Role.ADMIN, Role.VENDOR]), adminController.getBrands);
 router.post("/brands", auth, roleCheck([Role.ADMIN]), adminController.createBrand);
 router.put("/brands/:id", auth, roleCheck([Role.ADMIN]), adminController.updateBrand);
 router.delete("/brands/:id", auth, roleCheck([Role.ADMIN]), adminController.deleteBrand);

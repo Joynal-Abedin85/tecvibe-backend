@@ -1,9 +1,13 @@
 import { Router } from "express";
-import { vendorController } from "./vendor.controller";
+import { createProductController, getProductByIdController, getVendorProductsController, vendorController } from "./vendor.controller";
 import { auth } from "../../middleware/auth";
 import { upload } from "../../middleware/multer";
+import { roleCheck } from "../../middleware/rolecheck";
+import { Role } from "@prisma/client";
 
 const router = Router();
+// const upload = multer({ dest: "/tmp" }); 
+
 
 // VENDOR APPLY
 router.post("/apply", auth, vendorController.applyvendor);
@@ -12,13 +16,23 @@ router.post("/apply", auth, vendorController.applyvendor);
 router.get("/dashboard", auth, vendorController.getDashboard);
 
 // PRODUCT CRUD
-router.post("/products", auth, vendorController.createProduct);
-router.put("/products/:id", auth, vendorController.updateProduct);
+router.post(
+  "/products",
+  auth,
+  roleCheck([Role.VENDOR]),
+  upload.array("images"),
+  createProductController
+);
+router.get("/products", auth, getVendorProductsController);
+
+router.get("/products/:id", auth, getProductByIdController);
+
+router.put("/products/:id", auth,upload.array("images"),  vendorController.updateProduct);
 router.delete("/products/:id", auth, vendorController.deleteProduct);
 
 // PRODUCT IMAGES
-router.post("/products/:id/images", auth,  upload.array("images", 5),   // multiple image support
-  vendorController.uploadImages);
+// router.post("/products/:id/images", auth,  upload.array("images", 5),   // multiple image support
+//   vendorController.uploadImages);
 
 // STOCK UPDATE
 router.put("/products/:id/stock", auth, vendorController.updateStock);

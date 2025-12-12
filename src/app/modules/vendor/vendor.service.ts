@@ -33,20 +33,50 @@ const getDashboard = async (userid: string) => {
     return dashboard
 }
 
-// product 
 
-const createproduct = async(userid: string, payload: any) => {
-    const vendor = await prisma.vendor.findUnique({where: {userid}})
+
+// 1️⃣ Create Product
+export const createproduct = async (userid: string, payload: any) => {
+  try {
+    const vendor = await prisma.vendor.findUnique({ where: { userid } });
+    if (!vendor) throw new Error("Vendor not found");
 
     const product = await prisma.product.create({
-        data: {
-            vendorid: vendor!.id,
-            ...payload
-        }
-    }) 
+      data: {
+        verdorid: vendor.id,
+        ...payload
+      }
+    });
+    return product;
+  } catch (err) {
+    console.error("CREATE PRODUCT ERROR:", err);
+    throw err;
+  }
+};
 
-    return product
-}
+
+// 2️⃣ Upload Product Images
+export const uploadProductImages = async (productId: string, files: Express.Multer.File[]) => {
+  const uploadedImages: any[] = [];
+
+  for (const file of files) {
+    const upload = await cloudinary.uploader.upload(file.path, {
+      folder: "products",
+    });
+
+    const saved = await prisma.productimage.create({
+      data: {
+        productid: productId,
+        url: upload.secure_url,
+      },
+    });
+
+    uploadedImages.push(saved);
+  }
+
+  return uploadedImages;
+};
+
 
 
 const updateproduct = async (id : string, payload: any  ) => {
@@ -66,31 +96,7 @@ const deleteProduct = async(id: string) => {
     return deletep
 }
 
-// add product image 
 
-
-
-export const uploadProductImages = async (productId: string, files: Express.Multer.File[]) => {
-  
-  const uploadedImages = [];
-
-  for (const file of files) {
-    const upload = await cloudinary.uploader.upload(file.path, {
-      folder: "products",
-    });
-
-    const saved = await prisma.productimage.create({
-      data: {
-        productid: productId,
-        url: upload.secure_url,
-      },
-    });
-
-    uploadedImages.push(saved);
-  }
-
-  return uploadedImages;
-};
 
 
 // stock 
