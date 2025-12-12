@@ -37,11 +37,12 @@ const getorderbyid = async( id: string) => {
 
 
 const createorder = async (
-  userId: string,
+  userid: string,
   data: {
     vendorid: string;
     deliveryid?: string;
     total: number;
+    area: string;
     items: {
       productid: string;
       quantity: number;
@@ -49,27 +50,35 @@ const createorder = async (
     }[];
   }
 ) => {
+  const { vendorid, deliveryid, total, items,area } = data;
+
   const order = await prisma.order.create({
     data: {
-      userid: userId,
-      vendorid: data.vendorid,
-      deliveryid: data.deliveryid,
-      total: data.total,
+      userid,
+      vendorid,
+      area,
+      deliveryid: deliveryid || null,
+      total,
+
       items: {
-        create: data.items.map((i) => ({
-          productid: i.productid,
-          quantity: i.quantity,
-          price: i.price,
-        })),
-      },
+        create: items.map((item) => ({
+          quantity: item.quantity,
+          price: item.price,
+
+          product: {
+            connect: { id: item.productid }
+          }
+        }))
+      }
     },
     include: {
       items: true,
-    },
+    }
   });
 
   return order;
 };
+
 
 const trackingorder = async(orderid: string) => {
     const track = await prisma.order.findUnique({
