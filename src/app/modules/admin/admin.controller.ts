@@ -34,6 +34,16 @@ const createCategory = catchAsync(async (req: Request, res: Response) => {
   res.json({ success: true, category });
 });
 
+  const getCategories= async (req: Request, res: Response) => {
+    try {
+      const categories = await adminService.getAllCategories();
+      res.status(200).json(categories);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ message: "Error fetching categories" });
+    }
+  }
+
 const updateCategory = catchAsync(async (req: Request, res: Response) => {
   const category = await adminService.updateCategory(
     req.params.id,
@@ -54,6 +64,16 @@ const createBrand = catchAsync(async (req: Request, res: Response) => {
   const brand = await adminService.createBrand(req.body.name);
   res.json({ success: true, brand });
 });
+
+  const getBrands= async (req: Request, res: Response) => {
+    try {
+      const brands = await adminService.getAllBrands();
+      res.status(200).json(brands);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ message: "Error fetching brands" });
+    }
+  }
 
 const updateBrand = catchAsync(async (req: Request, res: Response) => {
   const brand = await adminService.updateBrand(req.params.id, req.body.name);
@@ -197,5 +217,7 @@ export const adminController = {
   assignDelivery,
   getReports,
   getAllVendors,
-  getManagerById
+  getManagerById,
+  getCategories,
+  getBrands
 };

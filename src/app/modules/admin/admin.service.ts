@@ -40,6 +40,12 @@ export const adminService = {
     return prisma.category.create({ data: { name } });
   },
 
+    getAllCategories: async () => {
+    return prisma.category.findMany({
+      orderBy: { name: "asc" }
+    });
+  },
+
   updateCategory: async (id: string, name: string) => {
     return prisma.category.update({
       where: { id },
@@ -56,6 +62,12 @@ export const adminService = {
   ------------------------------------*/
   createBrand: async (name: string) => {
     return prisma.brand.create({ data: { name } });
+  },
+
+    getAllBrands: async () => {
+    return prisma.brand.findMany({
+      orderBy: { name: "asc" }
+    });
   },
 
   updateBrand: async (id: string, name: string) => {
