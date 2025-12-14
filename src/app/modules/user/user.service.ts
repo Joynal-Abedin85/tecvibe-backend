@@ -1,40 +1,38 @@
-import prisma from "../../utils/prisma"
+import prisma from "../../utils/prisma";
 
 const getprofile = async (userId: string) => {
-    const user = prisma.user.findUnique({
-        where: {id: userId},
-        select: {id: true, name: true, email: true, role: true}
-    })
-    return user
-}
+  const user = prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, name: true, email: true, role: true },
+  });
+  return user;
+};
 
-const updateprofile = async(userId: string, data : any) => {
-    const update = prisma.user.update({
-        where: {id: userId},
-        data
-    })
+const updateprofile = async (userId: string, data: any) => {
+  const update = prisma.user.update({
+    where: { id: userId },
+    data,
+  });
 
-    return update
-}
+  return update;
+};
 
-// order service 
+// order service
 
-const getorder = async(userId: string ) => {
-    const order = prisma.order.findMany({
-        where: {id: userId},
-        orderBy: {createdat: "desc"}
-    })
-    return order
-}
+const getorder = async (userId: string) => {
+  const order = prisma.order.findMany({
+    where: { id: userId },
+    orderBy: { createdat: "desc" },
+  });
+  return order;
+};
 
-
-const getorderbyid = async( id: string) => {
-    const orderbyid = prisma.order.findUnique({
-        where: { id }
-    })
-    return orderbyid
-}
-
+const getorderbyid = async (id: string) => {
+  const orderbyid = prisma.order.findUnique({
+    where: { id },
+  });
+  return orderbyid;
+};
 
 const createorder = async (
   userid: string,
@@ -50,7 +48,7 @@ const createorder = async (
     }[];
   }
 ) => {
-  const { vendorid, deliveryid, total, items,area } = data;
+  const { vendorid, deliveryid, total, items, area } = data;
 
   const order = await prisma.order.create({
     data: {
@@ -66,164 +64,185 @@ const createorder = async (
           price: item.price,
 
           product: {
-            connect: { id: item.productid }
-          }
-        }))
-      }
+            connect: { id: item.productid },
+          },
+        })),
+      },
     },
     include: {
       items: true,
-    }
+    },
   });
 
   return order;
 };
 
+const trackingorder = async (orderid: string) => {
+  const track = await prisma.order.findUnique({
+    where: { id: orderid },
+    select: {
+      id: true,
+      status: true,
+    },
+  });
 
-const trackingorder = async(orderid: string) => {
-    const track = await prisma.order.findUnique({
-        where: {id: orderid},
-        select: {
-            id: true,
-            status: true,
-        }
-    })
+  if (!track) throw new Error("Order not found");
 
-    if (!track) throw new Error("Order not found");
+  return track;
+};
 
-    return track
-}
+// cart service
 
-// cart service 
+export const createaddToCart = async (
+  userid: string,
+  data: { productid: string; quantity: number }
+) => {
+  const existing = await prisma.cart.findFirst({
+    where: {
+      userid,
+      productid: data.productid,
+    },
+  });
 
-const addtocart = async (userid: string, data: any) => {
-  const item = await prisma.cart.create({
+  if (existing) {
+    return prisma.cart.update({
+      where: { id: existing.id },
+      data: { quantity: existing.quantity + data.quantity },
+    });
+  }
+
+  return prisma.cart.create({
     data: {
       userid,
       productid: data.productid,
       quantity: data.quantity,
+    },
+  });
+};
 
+const getcart = async (userid: string) => {
+  return prisma.cart.findMany({
+    where: { userid },
+    include: {
+      product: true, // ✅ product data আনবে
+    },
+  });
+};
+
+const updateCartItem = async (id: string, data: any) => {
+  const update = await prisma.cart.update({
+    where: { id },
+    data,
+  });
+  return update;
+};
+
+const deletecartitem = async (id: string) => {
+  const deletecart = await prisma.cart.delete({
+    where: { id },
+  });
+
+  return deletecart;
+};
+
+// add wishlist
+
+const addwishlists = async (userid: string, data: any) => {
+  const existing = await prisma.wishlist.findFirst({
+    where: {
+      userid,
+      productid: data.productid,
     },
   });
 
-  return item;
-};
+  if (existing) {
+    return null;
+  }
 
-
-const getcart = async (userid: string) => {
-    const getcart = await prisma.cart.findMany({
-        where: {userid}
-    })
-
-    return getcart
-}
-
-
-const updateCartItem = async (id: string, data: any) => {
-    const update = await prisma.cart.update({
-        where: {id},
-        data
-    })
-    return update
-}
-
-
-const deletecartitem = async (id: string) => {
-    const deletecart = await prisma.cart.delete({
-        where: {id}
-    })
-
-    return deletecart
-}
-
-
-// add wishlist 
-
-const addwishlist = async (userid: string, data: any)=> {
   return prisma.wishlist.create({
     data: {
       userid,
       productid: data.productid,
-    }
+    },
   });
 };
- 
-
 
 const getwishlist = async (userid: string) => {
-    const getlist = await prisma.wishlist.findMany({
-        where: {userid}
-    })
-    return getlist
-}
+  const getlist = await prisma.wishlist.findMany({
+    where: { userid },
+    include: {
+      product: true, // ✅ product data আনবে
+    },
+  });
+  return getlist;
+};
 
 const deletewishlist = async (id: string) => {
-    const deletewishlist = await prisma.wishlist.delete({
-        where: {id}
-    })
+  const deletewishlist = await prisma.wishlist.delete({
+    where: { id },
+  });
 
-    return deletewishlist
-}
+  return deletewishlist;
+};
 
-// review 
+// review
 
-const addreview = async (userid: string , productid: string, data: any) => {
-    const addreview = await prisma.review.create({
-        data: {
-            userid,
-            productid,
-            ...data
-        }
-    })
+const addreview = async (userid: string, productid: string, data: any) => {
+  const addreview = await prisma.review.create({
+    data: {
+      userid,
+      productid,
+      ...data,
+    },
+  });
 
-    return addreview
-}
+  return addreview;
+};
 
 const getreview = async (productid: string) => {
-    const getreview = prisma.review.findMany({
-        where: {productid}
-    })
+  const getreview = prisma.review.findMany({
+    where: { productid },
+  });
 
-    return getreview
-}
+  return getreview;
+};
 
-const addQuestion = async (userid: string , productid: string, data: any) => {
-    const question = await prisma.question.create({
-        data: {
-            userid,
-            productid,
-            ...data
-        }
-    })
+const addQuestion = async (userid: string, productid: string, data: any) => {
+  const question = await prisma.question.create({
+    data: {
+      userid,
+      productid,
+      ...data,
+    },
+  });
 
-    return question
-}
+  return question;
+};
 
 const getQuestions = async (productid: string) => {
-    const question = prisma.question.findMany({
-        where: {productid}
-    })
+  const question = prisma.question.findMany({
+    where: { productid },
+  });
 
-    return question
-}
-
+  return question;
+};
 
 export const userservice = {
-    getprofile,
-    updateprofile,
-    getorder,
-    getorderbyid,
-    createorder,
-    trackingorder,
-    addtocart,
-    getcart,
-    updateCartItem,
-    deletecartitem,
-    addwishlist,
-    getwishlist,
-    deletewishlist,
-    addreview,
-    getreview,
-    addQuestion,
-    getQuestions
-}
+  getprofile,
+  updateprofile,
+  getorder,
+  getorderbyid,
+  createorder,
+  trackingorder,
+  // addtocart,
+  getcart,
+  updateCartItem,
+  deletecartitem,
+  addwishlists,
+  getwishlist,
+  deletewishlist,
+  addreview,
+  getreview,
+  addQuestion,
+  getQuestions,
+};
