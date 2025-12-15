@@ -1,3 +1,4 @@
+import Stripe from "stripe";
 import prisma from "../../utils/prisma";
 
 const getprofile = async (userId: string) => {
@@ -19,13 +20,21 @@ const updateprofile = async (userId: string, data: any) => {
 
 // order service
 
-const getorder = async (userId: string) => {
-  const order = prisma.order.findMany({
-    where: { id: userId },
+const getorder = async (userid: string) => {
+  return prisma.order.findMany({
+    where: { userid }, // ✅ ঠিক
     orderBy: { createdat: "desc" },
+    include: {
+      items: {
+        include: {
+          product: true,
+        },
+      },
+      vendor: true,
+    },
   });
-  return order;
 };
+
 
 const getorderbyid = async (id: string) => {
   const orderbyid = prisma.order.findUnique({
@@ -226,6 +235,25 @@ const getQuestions = async (productid: string) => {
 
   return question;
 };
+
+
+
+export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2025-11-17.clover",
+});
+
+export const createPaymentIntentService = async (amount: number) => {
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: Math.round(amount * 100), // taka → paisa
+    currency: "bdt",
+    automatic_payment_methods: {
+      enabled: true,
+    },
+  });
+
+  return paymentIntent;
+};
+
 
 export const userservice = {
   getprofile,

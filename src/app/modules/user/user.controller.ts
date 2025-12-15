@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { catchAsync } from "../../utils/catchasync";
-import { createaddToCart, userservice } from "./user.service";
+import { createaddToCart, createPaymentIntentService, userservice } from "./user.service";
 import sendResponse from "../../middleware/sendresponse";
 import prisma from "../../utils/prisma";
 
@@ -33,17 +33,18 @@ const updateProfile = catchAsync(async (req: Request, res: Response) => {
 // order
 
 const getOrders = catchAsync(async (req: Request, res: Response) => {
-  const userId = (req as any).user?.id;
+  const userid = (req as any).user.id;
 
-  const order = await userservice.getorder(userId);
+  const orders = await userservice.getorder(userid);
 
   sendResponse(res, {
-    statusCode: 201,
+    statusCode: 200,
     success: true,
-    message: "success  get order",
-    data: order,
+    message: "success get order",
+    data: orders,
   });
 });
+
 
 const getOrderById = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
@@ -297,6 +298,22 @@ export const getRefundStatus = async (req: any, res: Response) => {
     res.status(400).json({ success: false, message: err.message });
   }
 };
+
+
+export const createPaymentIntent = async (req: Request, res: Response) => {
+  const { amount } = req.body;
+
+  if (!amount) {
+    return res.status(400).json({ message: "Amount required" });
+  }
+
+  const paymentIntent = await createPaymentIntentService(amount);
+
+  res.json({
+    clientSecret: paymentIntent.client_secret,
+  });
+};
+
 
 export const usercontroller = {
   getprofile,

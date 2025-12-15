@@ -1,5 +1,5 @@
 import express from "express"
-import { createReturnRequest, getRefundStatus, usercontroller } from "./user.controller"
+import { createPaymentIntent, createReturnRequest, getRefundStatus, usercontroller } from "./user.controller"
 import { auth } from "../../middleware/auth";
 
 
@@ -41,6 +41,9 @@ router.post("/:id/return", auth, createReturnRequest);
 
 // get refund status
 router.get("/:id/refund", auth, getRefundStatus);
+
+
+router.post("/create-intent", auth, createPaymentIntent);
 
 
 
