@@ -1,24 +1,24 @@
 
 
-model VendorWallet {
-    id       String @id @default(uuid())
-    vendorid String @unique
-    balance  Float  @default(0)
+// model VendorWallet {
+//     id       String @id @default(uuid())
+//     vendorid String @unique
+//     balance  Float  @default(0)
 
-    verdor  Vendor              @relation(fields: [vendorid], references: [id])
-    history WalletTransaction[]
-}
+//     verdor  Vendor              @relation(fields: [vendorid], references: [id])
+//     history WalletTransaction[]
+// }
 
-model WalletTransaction {
-    id        String       @id @default(uuid())
-    walletid  String
-    amount    Float
-    type      WalletType
-    createdat DateTime     @default(now())
-    wallet    VendorWallet @relation(fields: [walletid], references: [id])
-}
+// model WalletTransaction {
+//     id        String       @id @default(uuid())
+//     walletid  String
+//     amount    Float
+//     type      WalletType
+//     createdat DateTime     @default(now())
+//     wallet    VendorWallet @relation(fields: [walletid], references: [id])
+// }
 
-enum WalletType {
-    CREDIT
-    DEBIT
-}
+// enum WalletType {
+//     CREDIT
+//     DEBIT
+// }

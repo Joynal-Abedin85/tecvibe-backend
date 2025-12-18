@@ -1,10 +1,10 @@
 
 
-model DeliveryBoy {
-    id     String  @id @default(uuid())
-    userid String  @unique
-    area   String?
+// model DeliveryBoy {
+//     id     String  @id @default(uuid())
+//     userid String  @unique
+//     area   String?
 
-    user   User    @relation(fields: [userid], references: [id])
-    orders Order[]
-}
+//     user   User    @relation(fields: [userid], references: [id])
+//     orders Order[]
+// }

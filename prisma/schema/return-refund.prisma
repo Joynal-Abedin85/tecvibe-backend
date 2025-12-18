@@ -1,29 +1,35 @@
-model ReturnRequest {
-    id        String        @id @default(uuid())
-    orderId   String        @unique
-    reason    String
-    status    returnRequest @default(PENDING)
-    createdAt DateTime      @default(now())
-    order     Order         @relation(fields: [orderId], references: [id])
-}
+// model ReturnRequest {
+//     id        String        @id @default(uuid())
+//     orderId   String
+//     reason    String
+//     status    returnRequest @default(PENDING)
+//     createdAt DateTime      @default(now())
+//     order     Order         @relation(fields: [orderId], references: [id])
 
-enum returnRequest {
-    PENDING
-    APPROVED
-    REJECTED
-}
+//     @@index([orderId])
+// }
 
-model RefundsRequest {
-    id        String         @id @default(uuid())
-    orderid   String         @unique
-    amount    Float
-    status    refundsRequest @default(INITIATED)
-    createdAt DateTime       @default(now())
-    order     Order          @relation(fields: [orderid], references: [id])
-}
+// enum returnRequest {
+//     PENDING
+//     APPROVED
+//     REJECTED
+// }
 
-enum refundsRequest {
-    INITIATED
-    COMPLETED
-    FAILED
-}
+// model RefundsRequest {
+//     id      String @id @default(uuid())
+//     orderid String
+//     amount  Float
+
+//     status          refundsRequest @default(INITIATED)
+//     paymentIntentId String?
+//     createdAt       DateTime       @default(now())
+//     order           Order          @relation(fields: [orderid], references: [id])
+
+//     @@index([orderid])
+// }
+
+// enum refundsRequest {
+//     INITIATED
+//     COMPLETED
+//     FAILED
+// }

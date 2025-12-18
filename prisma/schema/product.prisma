@@ -1,38 +1,38 @@
 
 
-model Product {
-    id          String        @id @default(uuid())
-    verdorid    String
-    name        String
-    description String?
-    price       Float
-    stock       Int
-    status      ProductStatus @default(PENDING)
-    categoryid  String
-    brandid     String
+// model Product {
+//     id          String        @id @default(uuid())
+//     verdorid    String
+//     name        String
+//     description String?
+//     price       Float
+//     stock       Int
+//     status      ProductStatus @default(PENDING)
+//     categoryid  String
+//     brandid     String
 
-    verdor   Vendor   @relation(fields: [verdorid], references: [id])
-    category Category @relation(fields: [categoryid], references: [id])
-    brand    Brand    @relation(fields: [brandid], references: [id])
+//     verdor   Vendor   @relation(fields: [verdorid], references: [id])
+//     category Category @relation(fields: [categoryid], references: [id])
+//     brand    Brand    @relation(fields: [brandid], references: [id])
 
-    productimages productimage[]
-    carts         Cart[]
-    wishlists     Wishlist[]
-    orderItems    OrderItem[]
-    reviews       Review[]
-    questions     Question[]
-}
+//     productimages productimage[]
+//     carts         Cart[]
+//     wishlists     Wishlist[]
+//     orderItems    OrderItem[]
+//     reviews       Review[]
+//     questions     Question[]
+// }
 
-model productimage {
-    id        String @id @default(uuid())
-    productid String
-    url       String
+// model productimage {
+//     id        String @id @default(uuid())
+//     productid String
+//     url       String
 
-    product Product @relation(fields: [productid], references: [id])
-}
+//     product Product @relation(fields: [productid], references: [id])
+// }
 
-enum ProductStatus {
-    PENDING
-    APPROVED
-    REJECTED
-}
+// enum ProductStatus {
+//     PENDING
+//     APPROVED
+//     REJECTED
+// }

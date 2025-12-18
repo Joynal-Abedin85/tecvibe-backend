@@ -1,13 +1,13 @@
 
 
-model Category {
-    id       String    @id @default(uuid())
-    name     String    @unique
-    products Product[]
-}
+// model Category {
+//     id       String    @id @default(uuid())
+//     name     String    @unique
+//     products Product[]
+// }
 
-model Brand {
-    id       String    @id @default(uuid())
-    name     String    @unique
-    products Product[]
-}
+// model Brand {
+//     id       String    @id @default(uuid())
+//     name     String    @unique
+//     products Product[]
+// }

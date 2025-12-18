@@ -1,8 +1,14 @@
 import { Request, Response } from "express";
 import { catchAsync } from "../../utils/catchasync";
-import { createaddToCart, createPaymentIntentService, userservice } from "./user.service";
+import {
+  createaddToCart,
+  createPaymentIntentService,
+  stripe,
+  userservice,
+} from "./user.service";
 import sendResponse from "../../middleware/sendresponse";
 import prisma from "../../utils/prisma";
+import Stripe from "stripe";
 
 const getprofile = catchAsync(async (req: Request, res: Response) => {
   const userId = (req as any).user?.id;
@@ -44,7 +50,6 @@ const getOrders = catchAsync(async (req: Request, res: Response) => {
     data: orders,
   });
 });
-
 
 const getOrderById = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
@@ -117,7 +122,6 @@ const getCart = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-
 const updateCartItem = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const updateitem = userservice.updateCartItem(id, req.body);
@@ -145,7 +149,7 @@ const deleteCartItem = catchAsync(async (req: Request, res: Response) => {
 // wishlist
 
 const addWishlist = catchAsync(async (req: Request, res: Response) => {
-    const userid = (req as any).user.id; // auth middleware থেকে
+  const userid = (req as any).user.id; // auth middleware থেকে
   const { productid } = req.body;
 
   if (!productid) {
@@ -158,12 +162,11 @@ const addWishlist = catchAsync(async (req: Request, res: Response) => {
   const addwish = await userservice.addwishlists(userid, { productid });
 
   if (!addwish) {
-  return res.status(409).json({
-    success: false,
-    message: "Product already in wishlist",
-  });
-}
-
+    return res.status(409).json({
+      success: false,
+      message: "Product already in wishlist",
+    });
+  }
 
   sendResponse(res, {
     statusCode: 201,
@@ -267,7 +270,7 @@ export const createReturnRequest = async (req: any, res: Response) => {
 
     const returnReq = await prisma.returnRequest.create({
       data: {
-        orderId,
+        orderId: orderId,
         reason,
       },
     });
@@ -299,7 +302,6 @@ export const getRefundStatus = async (req: any, res: Response) => {
   }
 };
 
-
 export const createPaymentIntent = async (req: Request, res: Response) => {
   const { amount } = req.body;
 
@@ -313,6 +315,54 @@ export const createPaymentIntent = async (req: Request, res: Response) => {
     clientSecret: paymentIntent.client_secret,
   });
 };
+
+const cancelOrder = catchAsync(async (req: Request, res: Response) => {
+  const userId = (req as any).user.id;
+  const { id } = req.params;
+
+  const order = await prisma.order.findUnique({
+    where: { id },
+    include: { RefundsRequest: true },
+  });
+
+  if (!order)
+    return res.status(404).json({ message: "Order not found" });
+
+  if (order.userid !== userId)
+    return res.status(403).json({ message: "Unauthorized" });
+
+  if (["DELIVERED", "REJECTED", "FAILED", "CANCELLED"].includes(order.status)) {
+    return res.status(400).json({ message: "Order cannot be cancelled" });
+  }
+
+  if (order.RefundsRequest) {
+    return res.status(400).json({ message: "Refund already initiated" });
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.order.update({
+      where: { id },
+      data: { status: "CANCELLED" },
+    });
+
+    await tx.refundsRequest.create({
+      data: {
+        orderid: order.id,
+        amount: order.total,
+        paymentIntentId: order.paymentIntentId,
+      },
+    });
+  });
+
+  if (order.paymentIntentId) {
+    await stripe.refunds.create({
+      payment_intent: order.paymentIntentId,
+    });
+  }
+
+  res.json({ success: true, message: "Order cancelled & refund initiated" });
+});
+
 
 
 export const usercontroller = {
@@ -333,4 +383,5 @@ export const usercontroller = {
   getReviews,
   addQuestion,
   getQuestions,
+  cancelOrder,
 };

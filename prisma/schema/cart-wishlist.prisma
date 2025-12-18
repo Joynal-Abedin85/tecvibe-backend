@@ -1,20 +1,20 @@
 
 
-model Cart {
-    id        String @id @default(uuid())
-    userid    String
-    productid String
-    quantity  Int
+// model Cart {
+//     id        String @id @default(uuid())
+//     userid    String
+//     productid String
+//     quantity  Int
 
-    user    User    @relation(fields: [userid], references: [id])
-    product Product @relation(fields: [productid], references: [id])
-}
+//     user    User    @relation(fields: [userid], references: [id])
+//     product Product @relation(fields: [productid], references: [id])
+// }
 
-model Wishlist {
-    id        String @id @default(uuid())
-    userid    String
-    productid String
+// model Wishlist {
+//     id        String @id @default(uuid())
+//     userid    String
+//     productid String
 
-    user    User    @relation(fields: [userid], references: [id])
-    product Product @relation(fields: [productid], references: [id])
-}
+//     user    User    @relation(fields: [userid], references: [id])
+//     product Product @relation(fields: [productid], references: [id])
+// }

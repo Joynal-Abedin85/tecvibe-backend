@@ -1,36 +1,36 @@
-model User {
-    id        String   @id @default(uuid())
-    name      String
-    email     String   @unique
-    password  String?
-    role      Role     @default(USER)
-    createdat DateTime @default(now())
-    updatedat DateTime @updatedAt
+// model User {
+//     id        String   @id @default(uuid())
+//     name      String
+//     email     String   @unique
+//     password  String?
+//     role      Role     @default(USER)
+//     createdat DateTime @default(now())
+//     updatedat DateTime @updatedAt
 
-    vendor      Vendor?
-    manager     Manager?
-    deliveryBoy DeliveryBoy?
-    Orders      Order[]
-    CartItems   Cart[]
-    Wishlist    Wishlist[]
-    Reviews     Review[]
-    Questions   Question[]
-    Chats       ChatMessage[]
-}
+//     vendor      Vendor?
+//     manager     Manager?
+//     deliveryBoy DeliveryBoy?
+//     Orders      Order[]
+//     CartItems   Cart[]
+//     Wishlist    Wishlist[]
+//     Reviews     Review[]
+//     Questions   Question[]
+//     Chats       ChatMessage[]
+// }
 
-enum Role {
-    USER
-    VENDOR
-    MANAGER
-    ADMIN
-    SUPER_ADMIN
-    DELIVERY_BOY
-}
+// enum Role {
+//     USER
+//     VENDOR
+//     MANAGER
+//     ADMIN
+//     SUPER_ADMIN
+//     DELIVERY_BOY
+// }
 
 
-model SystemConfig {
-  id    String  @id @default(uuid())
-  key   String  @unique
-  value String
-}
+// model SystemConfig {
+//   id    String  @id @default(uuid())
+//   key   String  @unique
+//   value String
+// }
 

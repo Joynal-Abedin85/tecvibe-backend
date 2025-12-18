@@ -1,6 +1,7 @@
 import express from "express"
 import { createPaymentIntent, createReturnRequest, getRefundStatus, usercontroller } from "./user.controller"
 import { auth } from "../../middleware/auth";
+import prisma from "../../utils/prisma";
 
 
 const router = express.Router()
@@ -44,6 +45,11 @@ router.get("/:id/refund", auth, getRefundStatus);
 
 
 router.post("/create-intent", auth, createPaymentIntent);
+
+
+// POST /api/v1/user/orders/:id/cancel
+router.post("/orders/:id/cancel", auth, usercontroller.cencelorder);
+
 
 
 

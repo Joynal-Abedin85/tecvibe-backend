@@ -1,40 +1,42 @@
-model Order {
-    id         String      @id @default(uuid())
-    userid     String
-    vendorid   String
-    deliveryid String?
-    area       String
-    total      Float
-    status     OrderStatus @default(PENDING)
-    createdat  DateTime    @default(now())
+// model Order {
+//     id         String      @id @default(uuid())
+//     userid     String
+//     vendorid   String
+//     deliveryid String?
+//     area       String
+//     total      Float
+//      paymentIntentId String? 
+//     status     OrderStatus @default(PENDING)
+//     createdat  DateTime    @default(now())
 
-    user        User         @relation(fields: [userid], references: [id])
-    vendor      Vendor       @relation(fields: [vendorid], references: [id])
-    deliveryboy DeliveryBoy? @relation(fields: [deliveryid], references: [id])
+//     user        User         @relation(fields: [userid], references: [id])
+//     vendor      Vendor       @relation(fields: [vendorid], references: [id])
+//     deliveryboy DeliveryBoy? @relation(fields: [deliveryid], references: [id])
 
-    items   OrderItem[]
-    return  ReturnRequest?
-    refunds RefundsRequest?
-}
+//     items   OrderItem[]
+//     return  ReturnRequest?
+//     refunds RefundsRequest?
+// }
 
-enum OrderStatus {
-    PENDING
-    ACCEPTED
-    REJECTED
-    PREPARING
-    PICKED
-    ON_THE_WAY
-    DELIVERED
-    FAILED
-}
+// enum OrderStatus {
+//     PENDING
+//     ACCEPTED
+//     REJECTED
+//     PREPARING
+//     PICKED
+//     ON_THE_WAY
+//     DELIVERED
+//     FAILED
+//     CANCELLED
+// }
 
-model OrderItem {
-    id        String @id @default(uuid())
-    orderid   String
-    productid String
-    quantity  Int
-    price     Float
+// model OrderItem {
+//     id        String @id @default(uuid())
+//     orderid   String
+//     productid String
+//     quantity  Int
+//     price     Float
 
-    order   Order   @relation(fields: [orderid], references: [id])
-    product Product @relation(fields: [productid], references: [id])
-}
+//     order   Order   @relation(fields: [orderid], references: [id])
+//     product Product @relation(fields: [productid], references: [id])
+// }

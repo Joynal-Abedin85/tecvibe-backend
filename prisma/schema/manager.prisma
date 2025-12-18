@@ -1,7 +1,7 @@
 
-model Manager {
-    id     String  @id @default(uuid())
-    userid String  @unique
-    area   String?
-    user   User    @relation(fields: [userid], references: [id])
-}
+// model Manager {
+//     id     String  @id @default(uuid())
+//     userid String  @unique
+//     area   String?
+//     user   User    @relation(fields: [userid], references: [id])
+// }

@@ -3,9 +3,268 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
+model Brand {
+  id      String    @id @default(uuid()) @db.Uuid
+  name    String    @unique
+  Product Product[]
+}
 
+model Cart {
+  id        String  @id @default(uuid()) @db.Uuid
+  productid String  @db.Uuid
+  quantity  Int
+  userid    String? @db.Uuid
+  Product   Product @relation(fields: [productid], references: [id])
+}
+
+model Category {
+  id      String    @id @default(uuid()) @db.Uuid
+  name    String    @unique
+  Product Product[]
+}
+
+model ChatMessage {
+  id         String   @id @default(uuid()) @db.Uuid
+  senderid   String   @db.Uuid
+  receiverid String   @db.Uuid
+  message    String
+  createdat  DateTime @default(now())
+  Sender     User     @relation("Sender", fields: [senderid], references: [id])
+  Receiver   User     @relation("Receiver", fields: [receiverid], references: [id])
+}
+
+model DeliveryBoy {
+  id     String  @id @default(uuid()) @db.Uuid
+  userid String  @unique @db.Uuid
+  area   String?
+  User   User    @relation(fields: [userid], references: [id])
+  Order  Order[]
+}
+
+model Manager {
+  id     String  @id @default(uuid()) @db.Uuid
+  userid String  @unique @db.Uuid
+  area   String?
+  User   User    @relation(fields: [userid], references: [id])
+}
+
+model Order {
+  id         String      @id @default(uuid()) @db.Uuid
+  userid     String      @db.Uuid
+  vendorid   String      @db.Uuid
+  deliveryid String?     @db.Uuid
+  total      Float
+  status     OrderStatus @default(PENDING)
+  createdat  DateTime    @default(now())
+  updatedat  DateTime    @updatedAt
+
+  area            String
+  paymentIntentId String?
+  DeliveryBoy     DeliveryBoy?    @relation(fields: [deliveryid], references: [id])
+  User            User            @relation(fields: [userid], references: [id])
+  Vendor          Vendor          @relation(fields: [vendorid], references: [id])
+  OrderItem       OrderItem[]
+  RefundsRequest  RefundsRequest?
+  ReturnRequest   ReturnRequest?
+}
+
+model OrderItem {
+  id        String  @id @default(uuid()) @db.Uuid
+  orderid   String  @db.Uuid
+  productid String  @db.Uuid
+  quantity  Int
+  price     Float
+  Order     Order   @relation(fields: [orderid], references: [id])
+  Product   Product @relation(fields: [productid], references: [id])
+}
+
+model Product {
+  id          String        @id @default(uuid()) @db.Uuid
+  verdorid    String        @db.Uuid
+  name        String
+  description String?
+  price       Float
+  stock       Int
+  status      ProductStatus @default(PENDING)
+  categoryid  String        @db.Uuid
+  brandid     String        @db.Uuid
+
+  updatedat DateTime @updatedAt
+
+  Cart         Cart[]
+  OrderItem    OrderItem[]
+  Brand        Brand          @relation(fields: [brandid], references: [id])
+  Category     Category       @relation(fields: [categoryid], references: [id])
+  Vendor       Vendor         @relation(fields: [verdorid], references: [id])
+  Question     Question[]
+  Review       Review[]
+  Wishlist     Wishlist[]
+  productimage productimage[]
+}
+
+model Question {
+  id        String  @id @default(uuid()) @db.Uuid
+  userid    String  @db.Uuid
+  productid String  @db.Uuid
+  question  String
+  answer    String?
+  Product   Product @relation(fields: [productid], references: [id])
+  User      User    @relation(fields: [userid], references: [id])
+}
+
+model RefundsRequest {
+  id              String         @id @default(uuid()) @db.Uuid
+  orderid         String         @unique @db.Uuid
+  amount          Float
+  status          refundsRequest @default(INITIATED)
+  createdAt       DateTime       @default(now())
+  paymentIntentId String?
+  Order           Order          @relation(fields: [orderid], references: [id])
+}
+
+model ReturnRequest {
+  id        String        @id @default(uuid()) @db.Uuid
+  orderId   String        @unique @db.Uuid
+  reason    String
+  status    returnRequest @default(PENDING)
+  createdAt DateTime      @default(now())
+  Order     Order         @relation(fields: [orderId], references: [id])
+}
+
+model Review {
+  id        String  @id @default(uuid()) @db.Uuid
+  userid    String  @db.Uuid
+  productid String  @db.Uuid
+  rating    Int
+  comment   String?
+  Product   Product @relation(fields: [productid], references: [id])
+  User      User    @relation(fields: [userid], references: [id])
+}
+
+model SystemConfig {
+  id    String @id @default(uuid()) @db.Uuid
+  key   String @unique
+  value String
+}
+
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  email     String   @unique
+  password  String?
+  role      Role     @default(USER)
+  createdat DateTime @default(now())
+  updatedat DateTime @updatedAt
+
+  SentMessages     ChatMessage[] @relation("Sender")
+  ReceivedMessages ChatMessage[] @relation("Receiver")
+
+  DeliveryBoy DeliveryBoy?
+  Manager     Manager?
+  Order       Order[]
+  Question    Question[]
+  Review      Review[]
+  Vendor      Vendor?
+}
+
+model Vendor {
+  id       String       @id @default(uuid()) @db.Uuid
+  userid   String       @unique @db.Uuid
+  shopname String
+  status   VendorStatus @default(PENDING)
+
+  updatedat DateTime @updatedAt
+
+  area         String?
+  Order        Order[]
+  Product      Product[]
+  User         User          @relation(fields: [userid], references: [id])
+  VendorWallet VendorWallet?
+}
+
+model VendorWallet {
+  id                String              @id @default(uuid()) @db.Uuid
+  vendorid          String              @unique @db.Uuid
+  balance           Float               @default(0)
+  Vendor            Vendor              @relation(fields: [vendorid], references: [id])
+  WalletTransaction WalletTransaction[]
+}
+
+model WalletTransaction {
+  id           String       @id @default(uuid()) @db.Uuid
+  walletid     String       @db.Uuid
+  amount       Float
+  type         WalletType
+  createdat    DateTime     @default(now())
+  VendorWallet VendorWallet @relation(fields: [walletid], references: [id])
+}
+
+model Wishlist {
+  id        String  @id @default(uuid()) @db.Uuid
+  productid String  @db.Uuid
+  userid    String? @db.Uuid
+  Product   Product @relation(fields: [productid], references: [id])
+}
+
+model productimage {
+  id        String  @id @default(uuid()) @db.Uuid
+  productid String  @db.Uuid
+  url       String
+  Product   Product @relation(fields: [productid], references: [id])
+}
+
+enum OrderStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  PREPARING
+  PICKED
+  ON_THE_WAY
+  DELIVERED
+  FAILED
+  CANCELLED
+}
+
+enum ProductStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum Role {
+  USER
+  VENDOR
+  MANAGER
+  ADMIN
+  SUPER_ADMIN
+  DELIVERY_BOY
+}
+
+enum VendorStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum WalletType {
+  CREDIT
+  DEBIT
+}
+
+enum refundsRequest {
+  INITIATED
+  COMPLETED
+  FAILED
+}
+
+enum returnRequest {
+  PENDING
+  APPROVED
+  REJECTED
+}
