@@ -1,4 +1,3 @@
-
 // src/modules/admin/admin.service.ts
 import prisma from "../../utils/prisma";
 
@@ -8,28 +7,28 @@ export const adminService = {
   ------------------------------------*/
   getPendingVendors: async () => {
     return prisma.vendor.findMany({
-      where: { status: "PENDING" }
+      where: { status: "PENDING" },
     });
   },
 
   approveVendor: async (vendorId: string) => {
     return prisma.vendor.update({
       where: { id: vendorId },
-      data: { status: "APPROVED" }
+      data: { status: "APPROVED" },
     });
   },
 
   rejectVendor: async (vendorId: string) => {
     return prisma.vendor.update({
       where: { id: vendorId },
-      data: { status: "REJECTED" }
+      data: { status: "REJECTED" },
     });
   },
 
   suspendVendor: async (vendorId: string) => {
     return prisma.vendor.update({
       where: { id: vendorId },
-      data: { status: "SUSPENDED" }
+      data: { status: "SUSPENDED" },
     });
   },
 
@@ -40,16 +39,16 @@ export const adminService = {
     return prisma.category.create({ data: { name } });
   },
 
-    getAllCategories: async () => {
+  getAllCategories: async () => {
     return prisma.category.findMany({
-      orderBy: { name: "asc" }
+      orderBy: { name: "asc" },
     });
   },
 
   updateCategory: async (id: string, name: string) => {
     return prisma.category.update({
       where: { id },
-      data: { name }
+      data: { name },
     });
   },
 
@@ -64,16 +63,16 @@ export const adminService = {
     return prisma.brand.create({ data: { name } });
   },
 
-    getAllBrands: async () => {
+  getAllBrands: async () => {
     return prisma.brand.findMany({
-      orderBy: { name: "asc" }
+      orderBy: { name: "asc" },
     });
   },
 
   updateBrand: async (id: string, name: string) => {
     return prisma.brand.update({
       where: { id },
-      data: { name }
+      data: { name },
     });
   },
 
@@ -86,35 +85,33 @@ export const adminService = {
   ------------------------------------*/
   getManagers: async () => {
     return prisma.manager.findMany({
-      include: { user: true }
+      include: { User: true },
     });
   },
 
   getManagerById: async (id: string) => {
-  return prisma.manager.findUnique({
-    where: { id },
-    include: { user: true },
-  });
-},
-
+    return prisma.manager.findUnique({
+      where: { id },
+      include: { User: true },
+    });
+  },
 
   createManager: async (userid: string, area: string) => {
-
     await prisma.user.update({
-        where: { id : userid},
-        data: {role: "MANAGER"}
-    })
+      where: { id: userid },
+      data: { role: "MANAGER" },
+    });
     const manager = prisma.manager.create({
-      data: { userid, area }
+      data: { userid, area },
     });
 
-    return manager 
+    return manager;
   },
 
   updateManager: async (id: string, area: string) => {
     return prisma.manager.update({
       where: { id },
-      data: { area }
+      data: { area },
     });
   },
 
@@ -127,41 +124,41 @@ export const adminService = {
   ------------------------------------*/
   getOrders: async () => {
     return prisma.order.findMany({
-      include: { user: true, vendor: true }
+      include: { User: true, Vendor: true },
     });
   },
 
   refundOrder: async (orderid: string) => {
     return prisma.refundsRequest.update({
       where: { orderid },
-      data: { status: "COMPLETED" }
+      data: { status: "COMPLETED" },
     });
   },
 
   returnOrder: async (orderId: string) => {
     return prisma.returnRequest.update({
       where: { orderId },
-      data: { status: "APPROVED" }
+      data: { status: "APPROVED" },
     });
   },
 
   /* -----------------------------------
      COUPONS (not in your model, simple demo)
   ------------------------------------*/
-//   createCoupon: async (data: any) => {
-//     return prisma.coupon.create({ data });
-//   },
+  //   createCoupon: async (data: any) => {
+  //     return prisma.coupon.create({ data });
+  //   },
 
-//   updateCoupon: async (id: string, data: any) => {
-//     return prisma.coupon.update({
-//       where: { id },
-//       data
-//     });
-//   },
+  //   updateCoupon: async (id: string, data: any) => {
+  //     return prisma.coupon.update({
+  //       where: { id },
+  //       data
+  //     });
+  //   },
 
-//   deleteCoupon: async (id: string) => {
-//     return prisma.coupon.delete({ where: { id } });
-//   },
+  //   deleteCoupon: async (id: string) => {
+  //     return prisma.coupon.delete({ where: { id } });
+  //   },
 
   /* -----------------------------------
      DELIVERY ASSIGN (Order.deliveryId)
@@ -169,7 +166,7 @@ export const adminService = {
   assignDelivery: async (orderId: string, deliveryid: string) => {
     return prisma.order.update({
       where: { id: orderId },
-      data: { deliveryid }
+      data: { deliveryid },
     });
   },
 
@@ -184,7 +181,7 @@ export const adminService = {
 
     // Optional: Monthly Sales & Revenue Trend (frontend chart use করার জন্য)
     const monthlySales = await prisma.order.groupBy({
-      by: ['createdat'],
+      by: ["createdat"],
       _sum: { total: true },
     });
 
@@ -202,14 +199,98 @@ export const adminService = {
     };
   },
 
-
-
-
   getAllVendors: async () => {
     return prisma.vendor.findMany({
-      include: { user: true, Wallet: true }
+      include: { User: true, VendorWallet: true },
     });
-  }
+  },
+
+  getVendorById: async (vendorId: string) => {
+    const vendor = await prisma.vendor.findUnique({
+      where: {
+        id: vendorId,
+      },
+      include: {
+        User: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            createdat: true,
+          },
+        },
+
+        Product: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            price: true,
+            stock: true,
+            status: true,
+            updatedat: true,
+            productimage: {
+              select: {
+                id: true,
+                url: true,
+              },
+            },
+            Category: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            Brand: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+
+        Order: {
+          select: {
+            id: true,
+            total: true,
+            status: true,
+            area: true,
+            createdat: true,
+            User: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+            OrderItem: {
+              select: {
+                quantity: true,
+                price: true,
+                Product: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+          orderBy: {
+            createdat: "desc",
+          },
+        },
+
+        VendorWallet: true,
+      },
+    });
+
+    if (!vendor) {
+      throw new Error("Vendor not found");
+    }
+
+    return vendor;
+  },
 };
-
-

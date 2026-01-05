@@ -6,10 +6,10 @@ export const ShopService = {
     return prisma.product.findMany({
       where: { status: "APPROVED" },
       include: {
-        productimages: true,
-        category: true,
-        brand: true,
-        verdor: { select: { shopname: true } },
+        productimage: true,
+        Category: true,
+        Brand: true,
+        Vendor: { select: { shopname: true } },
       },
     });
   },
@@ -19,12 +19,12 @@ export const ShopService = {
     return prisma.product.findUnique({
       where: { id },
       include: {
-        productimages: true,
-        category: true,
-        brand: true,
-        reviews: true,
-        questions: true,
-        verdor: { select: { shopname: true } },
+        productimage: true,
+        Category: true,
+        Brand: true,
+        Review: true,
+        Question: true,
+        Vendor: { select: { shopname: true } },
       },
     });
   },
@@ -40,7 +40,7 @@ export const ShopService = {
         ],
       },
       include: {
-        productimages: true,
+        productimage: true,
       },
     });
   },

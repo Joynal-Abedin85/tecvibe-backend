@@ -12,6 +12,10 @@ router.get("/vendors/pending", auth, roleCheck([Role.ADMIN]), adminController.ge
 router.put("/vendors/:id/approve", auth, roleCheck([Role.ADMIN]), adminController.approveVendor);
 router.put("/vendors/:id/reject", auth, roleCheck([Role.ADMIN]), adminController.rejectVendor);
 router.put("/vendors/:id/suspend", auth, roleCheck([Role.ADMIN]), adminController.suspendVendor);
+router.get(
+  "/vendors/:id",
+  adminController.getVendorByIdController
+);
 
 router.get("/categories", auth, roleCheck([Role.ADMIN, Role.VENDOR]), adminController.getCategories);
 router.post("/categories", auth, roleCheck([Role.ADMIN]), adminController.createCategory);

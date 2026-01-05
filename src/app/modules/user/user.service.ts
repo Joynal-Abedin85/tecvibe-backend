@@ -1,5 +1,6 @@
 import Stripe from "stripe";
 import prisma from "../../utils/prisma";
+import AppError from "../../middleware/AppError";
 
 const getprofile = async (userId: string) => {
   const user = prisma.user.findUnique({
@@ -25,16 +26,15 @@ const getorder = async (userid: string) => {
     where: { userid }, // ✅ ঠিক
     orderBy: { createdat: "desc" },
     include: {
-      items: {
+      OrderItem: {
         include: {
-          product: true,
+          Product: true,
         },
       },
-      vendor: true,
+      Vendor: true,
     },
   });
 };
-
 
 const getorderbyid = async (id: string) => {
   const orderbyid = prisma.order.findUnique({
@@ -43,6 +43,7 @@ const getorderbyid = async (id: string) => {
   return orderbyid;
 };
 
+// user.service.ts
 const createorder = async (
   userid: string,
   data: {
@@ -50,6 +51,7 @@ const createorder = async (
     deliveryid?: string;
     total: number;
     area: string;
+    address: string;
     items: {
       productid: string;
       quantity: number;
@@ -57,33 +59,68 @@ const createorder = async (
     }[];
   }
 ) => {
-  const { vendorid, deliveryid, total, items, area } = data;
+  const { vendorid, deliveryid, total, items, area, address } = data;
 
-  const order = await prisma.order.create({
-    data: {
-      userid,
-      vendorid,
-      area,
-      deliveryid: deliveryid || null,
-      total,
+  return await prisma.$transaction(async (tx) => {
+    // 1️⃣ Stock validation
+    for (const item of items) {
+      const product = await tx.product.findUnique({
+        where: { id: item.productid },
+      });
 
-      items: {
-        create: items.map((item) => ({
-          quantity: item.quantity,
-          price: item.price,
+      if (!product) {
+        throw new AppError(404, "Product not found");
+      }
 
-          product: {
-            connect: { id: item.productid },
-          },
-        })),
+      if (product.stock < item.quantity) {
+        throw new AppError(400, `Insufficient stock for ${product.name}`);
+      }
+    }
+
+    // 2️⃣ Create Order
+    const order = await tx.order.create({
+      data: {
+        userid,
+        vendorid,
+        area,
+        address,
+        deliveryid: deliveryid || null,
+        total,
+        status: "PENDING",
+        OrderItem: {
+          create: items.map((item) => ({
+            quantity: item.quantity,
+            price: item.price,
+            productid: item.productid,
+          })),
+        },
       },
-    },
-    include: {
-      items: true,
-    },
-  });
+      include: {
+        OrderItem: true,
+      },
+    });
 
-  return order;
+    // 3️⃣ Decrease product stock
+    for (const item of items) {
+      await tx.product.update({
+        where: { id: item.productid },
+        data: {
+          stock: {
+            decrement: item.quantity,
+          },
+        },
+      });
+    }
+
+    // 4️⃣ Clear user cart
+    await tx.cart.deleteMany({
+      where: {
+        userid,
+      },
+    });
+
+    return order;
+  });
 };
 
 const trackingorder = async (orderid: string) => {
@@ -133,7 +170,11 @@ const getcart = async (userid: string) => {
   return prisma.cart.findMany({
     where: { userid },
     include: {
-      product: true, // ✅ product data আনবে
+      Product: {
+        include: {
+          productimage: true,
+        },
+      },
     },
   });
 };
@@ -180,7 +221,7 @@ const getwishlist = async (userid: string) => {
   const getlist = await prisma.wishlist.findMany({
     where: { userid },
     include: {
-      product: true, // ✅ product data আনবে
+      Product: true, // ✅ product data আনবে
     },
   });
   return getlist;
@@ -236,8 +277,6 @@ const getQuestions = async (productid: string) => {
   return question;
 };
 
-
-
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-11-17.clover",
 });
@@ -253,7 +292,6 @@ export const createPaymentIntentService = async (amount: number) => {
 
   return paymentIntent;
 };
-
 
 export const userservice = {
   getprofile,

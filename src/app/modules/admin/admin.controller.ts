@@ -1,5 +1,5 @@
 // src/modules/admin/admin.controller.ts
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { catchAsync } from "../../utils/catchasync";
 import { adminService } from "./admin.service";
 
@@ -193,6 +193,26 @@ const getAllVendors = catchAsync(async (req: Request, res: Response) => {
   res.json({ success: true, vendors });
 });
 
+export const getVendorByIdController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+
+    const result = await adminService.getVendorById(id);
+
+    res.json({
+      success: true,
+      message: "Vendor retrieved successfully",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const adminController = {
   getPendingVendors,
   approveVendor,
@@ -219,5 +239,6 @@ export const adminController = {
   getAllVendors,
   getManagerById,
   getCategories,
-  getBrands
+  getBrands,
+  getVendorByIdController
 };

@@ -18,7 +18,7 @@ const getallvendor = catchAsync(async(req: Request, res: Response) => {
 export const getPendingProducts = catchAsync(async (req: Request, res: Response) => {
   const products = await prisma.product.findMany({
     where: { status: "PENDING" },
-    include: { productimages: true, verdor: true },
+    include: { productimage: true, Vendor: true },
   });
 
   sendResponse(res, {

@@ -48,7 +48,7 @@ router.post("/create-intent", auth, createPaymentIntent);
 
 
 // POST /api/v1/user/orders/:id/cancel
-router.post("/orders/:id/cancel", auth, usercontroller.cencelorder);
+router.post("/orders/:id/cancel", auth, usercontroller.cancelOrder);
 
 
 

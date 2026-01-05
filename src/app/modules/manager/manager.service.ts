@@ -3,8 +3,8 @@ import prisma from "../../utils/prisma"
 const getallvendor = async() => {
     const vendor = await prisma.vendor.findMany({
         include: {
-            user: true,
-            Products: true
+            User: true,
+            Product: true
         }
     })
 
@@ -33,9 +33,9 @@ const getVendorPerformance = async ( vendorid : string) => {
     const vendorperformance = await prisma.vendor.findUnique({
         where: {id: vendorid},
         include: {
-            Orders: true,
-            Products: true,
-            Wallet: true
+            Order: true,
+            Product: true,
+            VendorWallet: true
         }
     })
 
@@ -73,11 +73,11 @@ const getorderbymanagerarea = async (manageruserid : string) => {
 
     return prisma.order.findMany({
     where: {
-      vendor: {
+      Vendor: {
         area: managers.area,
       },
     },
-    include: { user: true, vendor: true },
+    include: { User: true, Vendor: true },
   });
 }
 
@@ -157,10 +157,10 @@ const   getManagerChat = async (managerId: string) => {
     const product = await prisma.product.findUnique({
       where: { id: productId },
       include: {
-        category: true,
-        brand: true,
-        verdor: true,
-        productimages: true,
+        Category: true,
+        Brand: true,
+        Vendor: true,
+        productimage: true,
       },
     });
 

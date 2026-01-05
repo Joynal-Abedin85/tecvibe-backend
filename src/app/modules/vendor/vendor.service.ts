@@ -24,9 +24,9 @@ const getDashboard = async (userid: string) => {
     const dashboard = await prisma.vendor.findUnique({
         where: {userid},
         include: {
-            Products: true,
-            Orders: true,
-            Wallet: {include: {history: true}}
+            Product: true,
+            Order: true,
+            VendorWallet: {include: {WalletTransaction: true}}
         }
     })
 
@@ -43,7 +43,7 @@ export const createproduct = async (userid: string, payload: any) => {
 
     const product = await prisma.product.create({
       data: {
-        verdorid: vendor.id,
+        vendorid: vendor.id,
         ...payload
       }
     });
@@ -127,11 +127,44 @@ const getorder = async (userid: string) => {
 
     const vendors = await prisma.order.findMany({
         where: {vendorid: vendor!.id},
-        include: {items: true, user: true}
+        include: {OrderItem: true, User: true}
     })
 
     return vendors
 }
+
+// vendor.service.ts
+const getOrderById = async (userid: string, orderId: string) => {
+  // find vendor by logged-in user
+  const vendor = await prisma.vendor.findUnique({
+    where: { userid },
+  });
+
+  if (!vendor) {
+    throw new Error( "Vendor not found");
+  }
+
+  // find order by id + vendorid (security)
+  const order = await prisma.order.findFirst({
+    where: {
+      id: orderId,
+      vendorid: vendor.id,
+    },
+    include: {
+      OrderItem: true,
+      User: true,
+    },
+  });
+
+  if (!order) {
+    throw new Error("Order not found");
+  }
+
+  return order;
+};
+
+
+
 
 const updateorder = async (id: string, payload: any ) => {
     const updateo = await prisma.order.update({
@@ -159,7 +192,7 @@ const getReturns = async(userid : string) => {
 
     const returms = await prisma.returnRequest.findMany({
         where: {
-            order: {
+            Order: {
                 vendorid: vendor!.id,
             }
         }
@@ -183,7 +216,7 @@ const getRefunds = async (userid: string) => {
 
     const getrefund = await prisma.refundsRequest.findMany({
         where: {
-            order: {
+            Order: {
                 vendorid: refunds!.id
             }
         }
@@ -226,7 +259,7 @@ const getinventorystatus = async (userid: string) => {
   const vendor = await prisma.vendor.findUnique({where: {userid}})
 
   const inventory = await prisma.product.findMany({
-    where: {verdorid: vendor!.id},
+    where: {vendorid: vendor!.id},
     select: {
         name: true,
         stock: true,
@@ -288,5 +321,6 @@ export const vendorservice = {
     getrevenue,
     getinventorystatus,
     getorderperformance,
-    getchats
+    getchats,
+    getOrderById
 }

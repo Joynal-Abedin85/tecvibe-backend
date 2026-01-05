@@ -42,6 +42,8 @@ router.post("/products/:id/offer", auth, vendorController.createOffer);
 
 // ORDER MANAGEMENT
 router.get("/orders", auth, vendorController.getOrders);
+router.get("/orders/:id", auth, vendorController.getOrderById);
+
 router.put("/orders/:id", auth, vendorController.updateOrder);
 router.put("/orders/:id/status", auth, vendorController.updateOrderStatus);
 

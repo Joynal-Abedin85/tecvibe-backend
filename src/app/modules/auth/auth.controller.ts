@@ -5,7 +5,8 @@ import { success } from "zod";
 import sendResponse from "../../middleware/sendresponse";
 
 const register = catchAsync(async (req: Request, res: Response) => {
-  const result = await authservice.register(req.body);
+  const file = req.file;
+  const result = await authservice.register(req.body, file);
 
   sendResponse(res, {
     statusCode: 201,

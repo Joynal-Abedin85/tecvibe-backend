@@ -7,7 +7,7 @@ export const deliveryService = {
   async getAssignedOrders(deliveryBoyId: string) {
     return prisma.order.findMany({
       where: { deliveryid: deliveryBoyId },
-      include: { items: true, user: true, vendor: true },
+      include: { OrderItem: true, User: true, Vendor: true },
     });
   },
 

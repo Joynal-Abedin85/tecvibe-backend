@@ -62,7 +62,7 @@ export const createProductController = async (req: any, res: any) => {
     // Create product
     const product = await prisma.product.create({
       data: {
-        verdorid: vendor.id,
+        vendorid: vendor.id,
         name,
         price: Number(price),
         stock: Number(stock),
@@ -105,9 +105,9 @@ export const getVendorProductsController = async (req: any, res: any) => {
 
     // 2️⃣ Fetch products of this vendor
     const products = await prisma.product.findMany({
-      where: { verdorid: vendor.id },
+      where: { vendorid: vendor.id },
       include: {
-        productimages: true, // fetch images
+        productimage: true, // fetch images
       },
       orderBy: { price: "desc" },
     });
@@ -117,7 +117,7 @@ export const getVendorProductsController = async (req: any, res: any) => {
       id: p.id,
       name: p.name,
       price: p.price,
-      image: p.productimages[0]?.url || "/placeholder.png", // first image or placeholder
+      image: p.productimage[0]?.url || "/placeholder.png", // first image or placeholder
       status: p.status,
     }));
 
@@ -137,9 +137,9 @@ export const getProductByIdController = async (req: any, res: any) => {
     const product = await prisma.product.findUnique({
       where: { id },
       include: {
-        productimages: true,
-        category: true,
-        brand: true,
+        productimage: true,
+        Category: true,
+        Brand: true,
       },
     });
 
@@ -363,6 +363,22 @@ const getChats = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getOrderById = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const result = await vendorservice.getOrderById(
+    (req as any).user.id,
+    id
+  );
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "get order by id success",
+    data: result,
+  });
+});
+
 export const vendorController = {
   applyvendor,
   getDashboard,
@@ -382,5 +398,6 @@ export const vendorController = {
   getInventoryStatus,
   getOrderPerformance,
   getChats,
+  getOrderById
   //   uploadImages
 };

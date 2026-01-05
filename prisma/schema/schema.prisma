@@ -63,7 +63,9 @@ model Order {
   createdat  DateTime    @default(now())
   updatedat  DateTime    @updatedAt
 
-  area            String
+  area    String
+  address String
+
   paymentIntentId String?
   DeliveryBoy     DeliveryBoy?    @relation(fields: [deliveryid], references: [id])
   User            User            @relation(fields: [userid], references: [id])
@@ -85,7 +87,7 @@ model OrderItem {
 
 model Product {
   id          String        @id @default(uuid()) @db.Uuid
-  verdorid    String        @db.Uuid
+  vendorid    String        @db.Uuid
   name        String
   description String?
   price       Float
@@ -100,7 +102,7 @@ model Product {
   OrderItem    OrderItem[]
   Brand        Brand          @relation(fields: [brandid], references: [id])
   Category     Category       @relation(fields: [categoryid], references: [id])
-  Vendor       Vendor         @relation(fields: [verdorid], references: [id])
+  Vendor       Vendor         @relation(fields: [vendorid], references: [id])
   Question     Question[]
   Review       Review[]
   Wishlist     Wishlist[]
@@ -157,6 +159,8 @@ model User {
   name      String
   email     String   @unique
   password  String?
+  image     String?
+  provider  String?
   role      Role     @default(USER)
   createdat DateTime @default(now())
   updatedat DateTime @updatedAt
