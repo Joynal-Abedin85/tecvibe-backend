@@ -21,7 +21,7 @@ const login = catchAsync(async (req: Request, res: Response) => {
 
     res.cookie("token", result.token, {
     httpOnly: true,
-    secure: false, // production এ true
+    secure: true, // production এ true
     sameSite: "none",
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
@@ -42,7 +42,7 @@ const googlelogin = catchAsync(async (req: Request, res: Response) => {
     // Cookie set
   res.cookie("token",result.token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: true,
     sameSite: "none",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
@@ -68,7 +68,7 @@ export const logoutUser = catchAsync(async (req: Request, res: Response) => {
 
     res.clearCookie("token", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: true,
     sameSite: "none",
   });
   sendResponse(res, {
