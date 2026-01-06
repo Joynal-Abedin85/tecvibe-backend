@@ -12,11 +12,20 @@ export const adminService = {
   },
 
   approveVendor: async (vendorId: string) => {
-    return prisma.vendor.update({
-      where: { id: vendorId },
-      data: { status: "APPROVED" },
-    });
+  const vendor = await prisma.vendor.update({
+    where: { id: vendorId },
+    data: { status: "APPROVED" },
+    include: { User: true },
+  });
+
+  await prisma.user.update({
+    where: { id: vendor.userid },
+    data: { role: "VENDOR" },
+  });
+
+  return vendor;
   },
+
 
   rejectVendor: async (vendorId: string) => {
     return prisma.vendor.update({
